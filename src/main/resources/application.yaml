@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: Hackaton
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    password: password
+    username: user
+
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
