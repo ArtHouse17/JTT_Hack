@@ -7,4 +7,5 @@
     <changeSet id="0" author="admin">
 
     </changeSet>
+    <include file="2026/01_create_db.sql" relativeToChangelogFile="true" />
 </databaseChangeLog>
