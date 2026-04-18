@@ -8,4 +8,5 @@
 
     </changeSet>
     <include file="2026/01_create_db.sql" relativeToChangelogFile="true" />
+    <include file="2026/02_update_attempt_answers.sql" relativeToChangelogFile="true" />
 </databaseChangeLog>
