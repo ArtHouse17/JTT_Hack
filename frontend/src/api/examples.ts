@@ -1,6 +1,7 @@
 import type { TestTask, MistakesTask, OpenTask } from './tasks'
 import type { UserInfo } from './users'
 import type { TaskAttemptResponse } from './attempts'
+import type { Progress } from './progress'
 
 export const TASK_ATTEMPT_RESPONSE_EXAMPLE: TaskAttemptResponse = {
   correct: true,
@@ -12,6 +13,7 @@ export const TEST_TASKS_EXAMPLE: TestTask[] = [
   {
     id: 'c044082b-b0da-4998-b3bd-9ba2217668c4',
     type: 'test',
+    points: 1,
     multiple: false,
     solved: false,
     question: 'Как расшифровывается аббревиатура SQL?',
@@ -25,6 +27,7 @@ export const TEST_TASKS_EXAMPLE: TestTask[] = [
   {
     id: 'c044082b-b0da-4998-b3bd-9ba2217668c4',
     type: 'test',
+    points: 1,
     multiple: true,
     solved: false,
     question: 'Как расшифровывается аббревиатура SQL?',
@@ -41,6 +44,7 @@ export const MISTAKES_TASKS_EXAMPLE: MistakesTask[] = [
   {
     id: 'ebcd3eb4-9b40-476d-865f-48c6ceb97f14',
     type: 'mistakes',
+    points: 2,
     solved: false,
     question: 'Исправьте ошибку',
     answer: 'Ошыбка',
@@ -51,8 +55,8 @@ export const OPEN_TASKS_EXAMPLE: OpenTask[] = [
   {
     id: 'ebcd3eb4-9b40-476d-865f-48c6ceb97f14',
     type: 'open',
+    points: 3,
     code: true,
-    title: 'Зарплата сотрудников',
     solved: false,
     question: `**Таблица:** \`Employee\`
 
@@ -83,3 +87,14 @@ export const OPEN_TASKS_EXAMPLE: OpenTask[] = [
     answer: 'select * from Employee;',
   },
 ]
+
+export const PROGRESS_EXAMPLE: Progress = {
+  pointsTotal: 30,
+  pointsEarned: 12,
+  testTasksTotal: 5,
+  testTasksSolved: 3,
+  mistakesTasksTotal: 4,
+  mistakesTasksSolved: 2,
+  openTasksTotal: 6,
+  openTasksSolved: 1,
+}

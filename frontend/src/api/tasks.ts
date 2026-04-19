@@ -5,6 +5,7 @@ export type TaskType = 'test' | 'mistakes' | 'open'
 export type TestTask = {
   id: string
   type: Extract<TaskType, 'test'>
+  points: number
   /** Можно ли выбирать несколько вариантов ответа */
   multiple: boolean
   /** Была ли когда-нибудь удачная попытка решения */
@@ -22,6 +23,7 @@ export type TestTask = {
 export type MistakesTask = {
   id: string
   type: Extract<TaskType, 'mistakes'>
+  points: number
   /** Была ли когда-нибудь удачная попытка решения */
   solved: boolean
   /** Текст вопроса */
@@ -33,10 +35,9 @@ export type MistakesTask = {
 export type OpenTask = {
   id: string
   type: Extract<TaskType, 'open'>
+  points: number
   /** Будет ли результат запускаться как SQL-код */
   code: boolean
-  /** У задач с запуском кода дожно быть короткое название */
-  title?: string
   /** Была ли когда-нибудь удачная попытка решения */
   solved: boolean
   /** Текст вопроса */

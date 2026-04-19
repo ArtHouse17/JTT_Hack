@@ -19,5 +19,6 @@ export async function postTaskAttempt(
   taskId: string,
   answer: TaskAttemptRequest,
 ): Promise<TaskAttemptResponse> {
+  console.log(taskId, answer)
   return TASK_ATTEMPT_RESPONSE_EXAMPLE
 }
