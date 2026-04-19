@@ -17,7 +17,6 @@ export function TasksPage() {
   return (
     <>
       <SegmentedRadioGroup
-        className="mx-auto"
         options={[
           { content: 'Тестовые', value: 'test' },
           { content: 'Поиск ошибок', value: 'mistakes' },
