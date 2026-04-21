@@ -1,5 +1,6 @@
 package com.jtt.javatachteam_hakaton.entity;
 
+import com.jtt.javatachteam_hakaton.entity.enums.GradeEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,7 +32,8 @@ public class User {
     private String lastname;
 
     @Column(name = "grade_level", columnDefinition = "grade_level_enum")
-    private Object gradeLevel;
+    @Enumerated(EnumType.STRING)
+    private GradeEnum gradeLevel;
 
     @ColumnDefault("'USER'")
     @Column(name = "role", length = 50)
