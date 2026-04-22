@@ -1,5 +1,6 @@
 package com.jtt.javatachteam_hakaton;
 
+import com.jtt.javatachteam_hakaton.api.ApiRouter;
 import com.jtt.javatachteam_hakaton.config.AppConfig;
 import com.jtt.javatachteam_hakaton.config.DataSourceFactory;
 import com.jtt.javatachteam_hakaton.config.EntityManagerFactoryProvider;
@@ -8,7 +9,6 @@ import io.javalin.Javalin;
 import jakarta.persistence.EntityManagerFactory;
 
 import javax.sql.DataSource;
-import java.util.Map;
 
 public final class Main {
 
@@ -18,9 +18,7 @@ public final class Main {
         LiquibaseMigrator.migrate(dataSource, config);
         EntityManagerFactory entityManagerFactory = EntityManagerFactoryProvider.create(dataSource);
 
-        Javalin app = Javalin.create(javalinConfig ->
-            javalinConfig.routes.get("/health", ctx -> ctx.json(Map.of("status", "ok")))
-        );
+        Javalin app = Javalin.create(javalinConfig -> ApiRouter.register(javalinConfig.routes));
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             app.stop();
