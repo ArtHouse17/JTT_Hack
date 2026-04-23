@@ -16,11 +16,14 @@ public class TaskOption {
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "task_id", nullable = false)
+    private Task task;
+
     @Column(name = "content", nullable = false, length = Integer.MAX_VALUE)
     private String content;
 
     @Column(name = "is_correct", nullable = false)
     private Boolean isCorrect;
-
 
 }
