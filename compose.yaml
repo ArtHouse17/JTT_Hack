@@ -35,7 +35,18 @@ services:
     restart: unless-stopped
     tty: true
     stdin_open: true
-
+  javalin-app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: javalin-app
+    ports:
+      - "7070:7070"
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
   vite:
     image: node:24-alpine
     container_name: vite
