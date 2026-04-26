@@ -10,9 +10,9 @@ public record AppConfig(
 ) {
     public static AppConfig fromEnvironment() {
         return new AppConfig(
-            read("DB_URL", "jdbc:postgresql://localhost:5432/postgres"),
-            read("DB_USER", "postgres"),
-            read("DB_PASSWORD", ""),
+            read("DB_URL", "jdbc:postgresql://postgres:5432/postgres"),
+            read("DB_USER", "user"),
+            read("DB_PASSWORD", "password"),
             read("DB_DRIVER", "org.postgresql.Driver"),
             read("LIQUIBASE_CHANGELOG", "db/changelog/db.changelog-master.xml"),
             Integer.parseInt(read("PORT", "8080"))
