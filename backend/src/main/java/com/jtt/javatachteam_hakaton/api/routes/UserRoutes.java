@@ -7,17 +7,14 @@ import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.path;
 
 public final class UserRoutes {
-    private static final UserHandler HANDLER = new UserHandler(RouteDependencies.stubApiService());
+    private UserRoutes() {}
 
-    private UserRoutes() {
-    }
-
-    public static void register() {
+    public static void register(UserHandler handler) {
         path("users", () -> path("me", () -> {
-            get(HANDLER::currentUser);
+            get(handler::currentUser);
             path("progress", () -> {
-                get(HANDLER::currentUserProgress);
-                delete(HANDLER::resetCurrentUserProgress);
+                get(handler::currentUserProgress);
+                delete(handler::resetCurrentUserProgress);
             });
         }));
     }

@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -31,8 +33,9 @@ public class User {
     @Column(name = "lastname", length = 100)
     private String lastname;
 
-    @Column(name = "grade_level", columnDefinition = "grade_level_enum")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Enumerated(EnumType.STRING)
+    @Column(name = "grade_level", columnDefinition = "grade_level_enum")
     private GradeEnum gradeLevel;
 
     @ColumnDefault("'USER'")
@@ -42,6 +45,5 @@ public class User {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
     private Instant createdAt;
-
 
 }
