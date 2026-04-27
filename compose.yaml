@@ -44,9 +44,14 @@ services:
       - "7070:7070"
     restart: unless-stopped
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       JAVA_OPTS: "-Xms256m -Xmx512m"
+      DB_URL: "jdbc:postgresql://postgres:5432/postgres"
+      DB_USER: "user"
+      DB_PASSWORD: "password"
+      PORT: "7070"
   vite:
     image: node:24-alpine
     container_name: vite

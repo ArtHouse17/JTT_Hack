@@ -40,14 +40,16 @@ public final class Main {
         UserService userService = new UserService(userRepository, attemptRepository);
 
         // --- Инициализация Контроллеров (Handlers) ---
-        TaskHandler taskHandler = new TaskHandler(attemptService);
-        AuthHandler authHandler = new AuthHandler(authService);
+        TaskHandler taskHandler = new TaskHandler(attemptService, taskRepository, attemptRepository);
+        AuthHandler authHandler = new AuthHandler(authService, userRepository);
         HealthHandler healthHandler = new HealthHandler();
-        UserHandler userHandler = new UserHandler(userService);
+        UserHandler userHandler = new UserHandler(userService, userRepository, attemptRepository);
 
         // --- Настройка Javalin и Роутинга ---
         Javalin app = Javalin.create(javalinConfig -> {
-            // Пробрасываем userHandler в ApiRouter
+            javalinConfig.bundledPlugins.enableCors(cors -> {
+                cors.addRule(it -> it.anyHost());
+            });
             ApiRouter.register(javalinConfig, authHandler, taskHandler, healthHandler, userHandler);
         });
 
