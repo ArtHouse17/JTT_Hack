@@ -5,12 +5,9 @@ import com.jtt.javatachteam_hakaton.api.handlers.HealthHandler;
 import static io.javalin.apibuilder.ApiBuilder.get;
 
 public final class HealthRoutes {
-    private static final HealthHandler HANDLER = new HealthHandler(RouteDependencies.stubApiService());
+    private HealthRoutes() {}
 
-    private HealthRoutes() {
-    }
-
-    public static void register() {
-        get("/health", HANDLER::health);
+    public static void register(HealthHandler handler) {
+        get("/health", handler::health);
     }
 }
