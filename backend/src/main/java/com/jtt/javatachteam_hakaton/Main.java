@@ -10,6 +10,7 @@ import com.jtt.javatachteam_hakaton.config.DataSourceFactory;
 import com.jtt.javatachteam_hakaton.config.EntityManagerFactoryProvider;
 import com.jtt.javatachteam_hakaton.config.LiquibaseMigrator;
 import com.jtt.javatachteam_hakaton.repository.*;
+import com.jtt.javatachteam_hakaton.security.TokenBlacklistService;
 import com.jtt.javatachteam_hakaton.security.SecurityConfig;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import com.jtt.javatachteam_hakaton.service.AuthService;
@@ -18,24 +19,23 @@ import io.javalin.Javalin;
 import jakarta.persistence.EntityManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.sql.DataSource;
 
 public final class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
-        logger.info("Starting Javalin application...");
+        logger.info("Запуск приложения Javalin...");
 
         // --- Загрузка конфигурации ---
         AppConfig config = AppConfig.fromEnvironment();
-        logger.info("Configuration loaded. Server port: {}", config.serverPort());
+        logger.info("Конфигурация загружена. Порт сервера: {}", config.serverPort());
 
         // --- Настройка базы данных ---
         DataSource dataSource = DataSourceFactory.create(config);
         LiquibaseMigrator.migrate(dataSource, config);
         EntityManagerFactory entityManagerFactory = EntityManagerFactoryProvider.create(dataSource);
-        logger.info("Database initialized successfully");
+        logger.info("База данных успешно инициализирована");
 
         // --- Инициализация репозиториев ---
         AttemptRepository attemptRepository = new AttemptRepository(entityManagerFactory);
@@ -51,43 +51,40 @@ public final class Main {
         UserService userService = new UserService(userRepository, attemptRepository);
 
         // --- Настройка безопасности ---
-        SecurityConfig securityConfig = new SecurityConfig(userRepository);
+        TokenBlacklistService tokenBlacklistService = new TokenBlacklistService();
+        SecurityConfig securityConfig = new SecurityConfig(tokenBlacklistService, userRepository);
 
         // --- Инициализация хендлеров ---
         TaskHandler taskHandler = new TaskHandler(attemptService);
-        AuthHandler authHandler = new AuthHandler(authService, securityConfig.getTokenBlacklistService());
+        AuthHandler authHandler = new AuthHandler(authService, tokenBlacklistService);
         HealthHandler healthHandler = new HealthHandler();
         UserHandler userHandler = new UserHandler(userService);
 
-        // --- Настройка и запуск Javalin ---
-        Javalin app = Javalin.create(javalinConfig -> {
-            ApiRouter.register(javalinConfig, authHandler, taskHandler,
-                    healthHandler, userHandler, securityConfig.getAuthMiddleware());
+        // --- Создание Javalin приложения (без дополнительных настроек) ---
+        Javalin app = Javalin.create();
 
-            // Дополнительные настройки Javalin
-            javalinConfig.showJavalinBanner = true;
-            javalinConfig.asyncTimeout = 10_000L;
-            javalinConfig.maxRequestSize = 10_485_760L; // 10 MB
-        });
+        // Регистрация маршрутов
+        ApiRouter.register(app, authHandler, taskHandler, healthHandler, userHandler,
+                securityConfig.getAuthMiddleware());
 
         // --- Graceful Shutdown ---
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Shutting down application...");
+            logger.info("Закрытие приложения...");
             app.stop();
             entityManagerFactory.close();
             if (dataSource instanceof AutoCloseable autoCloseable) {
                 try {
                     autoCloseable.close();
-                    logger.info("DataSource closed successfully");
+                    logger.info("Источник данных успешно закрыт");
                 } catch (Exception e) {
-                    logger.error("Error closing DataSource: {}", e.getMessage());
+                    logger.error("Ошибка при закрытии источника данных: {}", e.getMessage());
                 }
             }
-            logger.info("Application shutdown complete");
+            logger.info("Закрытие приложения завершено");
         }));
 
         // Запуск сервера
         app.start(config.serverPort());
-        logger.info("Server started on port {}", config.serverPort());
+        logger.info("Сервер запущен на порту {}", config.serverPort());
     }
 }

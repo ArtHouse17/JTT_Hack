@@ -7,18 +7,14 @@ import io.javalin.http.UnauthorizedResponse;
 import io.javalin.http.ForbiddenResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 
-/**
- * Middleware для аутентификации и авторизации
- * Проверяет JWT токены и устанавливает контекст пользователя
- */
 public class AuthMiddleware {
     private static final Logger logger = LoggerFactory.getLogger(AuthMiddleware.class);
 
@@ -31,14 +27,9 @@ public class AuthMiddleware {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Middleware для обязательной аутентификации
-     * Всегда проверяет наличие и валидность токена
-     */
     public void requireAuth(Context ctx) {
         String token = extractToken(ctx);
 
-        // 1. Проверяем наличие токена
         if (token == null) {
             logger.warn("Missing authorization token for request: {} {}",
                     ctx.method(), ctx.path());
@@ -46,27 +37,22 @@ public class AuthMiddleware {
         }
 
         try {
-            // 2. Проверяем, не в черном ли списке
             if (tokenBlacklistService.isBlacklisted(token)) {
                 logger.warn("Blacklisted token used for request: {} {}",
                         ctx.method(), ctx.path());
                 throw new UnauthorizedResponse("Token has been invalidated. Please login again.");
             }
 
-            // 3. Валидируем токен и извлекаем userId
             UUID userId = JwtProvider.extractUserId(token);
 
-            // 4. Проверяем, не истек ли токен (дополнительная проверка)
             if (JwtProvider.isExpired(token)) {
                 logger.warn("Expired token used by user: {}", userId);
                 throw new UnauthorizedResponse("Token has expired");
             }
 
-            // 5. Загружаем пользователя из БД (опционально, но полезно для ролей)
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new UnauthorizedResponse("User not found"));
 
-            // 6. Сохраняем данные в контекст для дальнейшего использования
             ctx.attribute("userId", userId);
             ctx.attribute("user", user);
             ctx.attribute("roles", user.getRole());
@@ -90,10 +76,6 @@ public class AuthMiddleware {
         }
     }
 
-    /**
-     * Middleware для опциональной аутентификации
-     * Не требует обязательного наличия токена, но если токен есть - проверяет его
-     */
     public void optionalAuth(Context ctx) {
         try {
             String token = extractToken(ctx);
@@ -108,16 +90,11 @@ public class AuthMiddleware {
                 }
             }
         } catch (Exception e) {
-            // При опциональной аутентификации просто логируем ошибку, но не блокируем запрос
             logger.debug("Optional authentication failed: {}", e.getMessage());
         }
     }
 
-    /**
-     * Middleware для проверки ролей
-     * @param allowedRoles разрешенные роли
-     */
-    public void requireRole(String... allowedRoles) {
+    public io.javalin.http.Handler requireRole(String... allowedRoles) {
         Set<String> allowedRoleSet = Set.of(allowedRoles);
 
         return ctx -> {
@@ -130,7 +107,7 @@ public class AuthMiddleware {
 
             if (!allowedRoleSet.contains(userRole.toUpperCase())) {
                 logger.warn("User with role {} attempted to access resource requiring roles: {}",
-                        userRole, Arrays.toString(allowedRoles));
+                        userRole, String.join(", ", allowedRoles));
                 throw new ForbiddenResponse("Access denied: insufficient permissions");
             }
 
@@ -138,11 +115,7 @@ public class AuthMiddleware {
         };
     }
 
-    /**
-     * Middleware для проверки владения ресурсом
-     * @param getResourceUserId функция для получения ID владельца ресурса
-     */
-    public void requireOwnership(java.util.function.Function<Context, UUID> getResourceUserId) {
+    public io.javalin.http.Handler requireOwnership(Function<Context, UUID> getResourceUserId) {
         return ctx -> {
             UUID userId = ctx.attribute("userId");
             UUID resourceOwnerId = getResourceUserId.apply(ctx);
@@ -159,9 +132,6 @@ public class AuthMiddleware {
         };
     }
 
-    /**
-     * Извлечение токена из заголовка Authorization
-     */
     private String extractToken(Context ctx) {
         String header = ctx.header("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {

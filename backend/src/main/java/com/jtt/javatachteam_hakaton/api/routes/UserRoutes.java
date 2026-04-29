@@ -11,16 +11,14 @@ public final class UserRoutes {
     public static void register(UserHandler handler, AuthMiddleware authMiddleware) {
         path("users", () -> {
             path("me", () -> {
-                // Все эти маршруты требуют аутентификации
                 get(handler::currentUser);
-
                 path("progress", () -> {
                     get(handler::currentUserProgress);
                     delete(handler::resetCurrentUserProgress);
                 });
             });
 
-            // Только ADMIN имеет доступ к списку всех пользователей
+            // Только ADMIN имеет доступ к конкретному пользователю
             path("{id}", () -> {
                 before(authMiddleware.requireRole("ADMIN"));
                 get(handler::getUserById);

@@ -1,8 +1,10 @@
 package com.jtt.javatachteam_hakaton.service;
 
+import com.jtt.javatachteam_hakaton.api.handlers.UserHandler;
 import com.jtt.javatachteam_hakaton.entity.User;
 import com.jtt.javatachteam_hakaton.repository.AttemptRepository;
 import com.jtt.javatachteam_hakaton.repository.UserRepository;
+import com.jtt.javatachteam_hakaton.entity.enums.GradeEnum;
 
 import java.util.UUID;
 

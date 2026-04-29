@@ -7,7 +7,6 @@ import io.javalin.http.Context;
 import io.javalin.http.ForbiddenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.UUID;
 
 public class UserHandler {

@@ -1,5 +1,6 @@
 package com.jtt.javatachteam_hakaton.security;
 
+import com.jtt.javatachteam_hakaton.config.AppConfig;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
@@ -18,10 +19,9 @@ public class JwtProvider {
 
 	static {
 		String secret = AppConfig.fromEnvironment().SECRET();
-		// Для JJWT 0.12.6 нужно минимум 256 бит (32 байта)
 		byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
 		SECRET_KEY = Keys.hmacShaKeyFor(secretBytes);
-		logger.info("JwtProvider initialized with secret key");
+		logger.info("JwtProvider initialized");
 	}
 
 	public static String generateToken(UUID userId) {
@@ -35,8 +35,7 @@ public class JwtProvider {
 	}
 
 	public static UUID extractUserId(String token) {
-		String subject = parseToken(token).getSubject();
-		return UUID.fromString(subject);
+		return UUID.fromString(parseToken(token).getSubject());
 	}
 
 	public static Claims parseToken(String token) {

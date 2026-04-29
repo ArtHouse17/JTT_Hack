@@ -1,9 +1,7 @@
 package com.jtt.javatachteam_hakaton.api.routes;
 
 import com.jtt.javatachteam_hakaton.api.handlers.TaskHandler;
-import static io.javalin.apibuilder.ApiBuilder.get;
-import static io.javalin.apibuilder.ApiBuilder.path;
-import static io.javalin.apibuilder.ApiBuilder.post;
+import static io.javalin.apibuilder.ApiBuilder.*;
 
 public final class TaskRoutes {
     private TaskRoutes() {}
