@@ -10,8 +10,8 @@ import com.jtt.javatachteam_hakaton.config.DataSourceFactory;
 import com.jtt.javatachteam_hakaton.config.EntityManagerFactoryProvider;
 import com.jtt.javatachteam_hakaton.config.LiquibaseMigrator;
 import com.jtt.javatachteam_hakaton.repository.*;
+import com.jtt.javatachteam_hakaton.security.AuthMiddleware;
 import com.jtt.javatachteam_hakaton.security.TokenBlacklistService;
-import com.jtt.javatachteam_hakaton.security.SecurityConfig;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import com.jtt.javatachteam_hakaton.service.AuthService;
 import com.jtt.javatachteam_hakaton.service.UserService;
@@ -52,7 +52,7 @@ public final class Main {
 
         // --- Настройка безопасности ---
         TokenBlacklistService tokenBlacklistService = new TokenBlacklistService();
-        SecurityConfig securityConfig = new SecurityConfig(tokenBlacklistService, userRepository);
+        AuthMiddleware authMiddleware = new AuthMiddleware(tokenBlacklistService, userRepository);
 
         // --- Инициализация хендлеров ---
         TaskHandler taskHandler = new TaskHandler(attemptService);
@@ -60,12 +60,12 @@ public final class Main {
         HealthHandler healthHandler = new HealthHandler();
         UserHandler userHandler = new UserHandler(userService);
 
-        // --- Создание Javalin приложения (без дополнительных настроек) ---
-        Javalin app = Javalin.create();
+        // --- Создание Javalin приложения с регистрацией маршрутов ---
+        Javalin app = Javalin.create(javalinConfig ->
+            ApiRouter.getRoutes(authHandler, taskHandler, healthHandler, userHandler, authMiddleware)
+                    .accept(javalinConfig)
+        );
 
-        // Регистрация маршрутов
-        ApiRouter.register(app, authHandler, taskHandler, healthHandler, userHandler,
-                securityConfig.getAuthMiddleware());
 
         // --- Graceful Shutdown ---
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
