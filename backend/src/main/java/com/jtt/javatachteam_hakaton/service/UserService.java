@@ -31,4 +31,18 @@ public class UserService {
 		// attemptRepository.deleteByUserId(userId);
 		return "{\"message\": \"Прогресс успешно сброшен\"}";
 	}
+
+	// UserService.java - добавить эти методы
+	public void updateUser(UUID userId, UserHandler.UpdateUserRequest req) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+		if (req.firstname() != null) user.setFirstname(req.firstname());
+		if (req.lastname() != null) user.setLastname(req.lastname());
+		if (req.gradeLevel() != null) {
+			user.setGradeLevel(GradeEnum.valueOf(req.gradeLevel()));
+		}
+
+		userRepository.save(user);
+	}
 }
