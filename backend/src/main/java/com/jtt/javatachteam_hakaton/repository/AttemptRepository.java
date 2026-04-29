@@ -90,6 +90,31 @@ public class AttemptRepository {
         }
     }
 
+    public boolean existsSolvedByUserIdAndTaskId(UUID userId, UUID taskId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            Long count = entityManager
+                .createQuery(
+                    """
+                    select count(a)
+                    from Attempt a
+                    where a.user.id = :userId
+                      and a.task.id = :taskId
+                      and a.status = :status
+                      and a.earnedPoints > 0
+                    """,
+                    Long.class
+                )
+                .setParameter("userId", userId)
+                .setParameter("taskId", taskId)
+                .setParameter("status", StatusEnum.COMPLETED)
+                .getSingleResult();
+            return count > 0;
+        } finally {
+            entityManager.close();
+        }
+    }
+
     public Attempt save(Attempt attempt) {
         return inTransaction(entityManager -> entityManager.merge(attempt));
     }

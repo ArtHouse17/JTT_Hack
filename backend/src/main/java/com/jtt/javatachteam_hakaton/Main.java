@@ -12,6 +12,7 @@ import com.jtt.javatachteam_hakaton.config.LiquibaseMigrator;
 import com.jtt.javatachteam_hakaton.repository.*;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import com.jtt.javatachteam_hakaton.service.AuthService;
+import com.jtt.javatachteam_hakaton.service.TaskService;
 import com.jtt.javatachteam_hakaton.service.UserService;
 import io.javalin.Javalin;
 import jakarta.persistence.EntityManagerFactory;
@@ -36,11 +37,12 @@ public final class Main {
         // --- Инициализация Сервисов ---
         AttemptService attemptService = new AttemptService(attemptRepository,
                 attemptAnswerRepository, taskRepository, userRepository, taskOptionRepository);
+        TaskService taskService = new TaskService(taskRepository, taskOptionRepository, attemptRepository);
         AuthService authService = new AuthService(userRepository);
         UserService userService = new UserService(userRepository, attemptRepository);
 
         // --- Инициализация Контроллеров (Handlers) ---
-        TaskHandler taskHandler = new TaskHandler(attemptService);
+        TaskHandler taskHandler = new TaskHandler(taskService, attemptService);
         AuthHandler authHandler = new AuthHandler(authService);
         HealthHandler healthHandler = new HealthHandler();
         UserHandler userHandler = new UserHandler(userService);

@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -26,14 +28,17 @@ public class Task {
     @Column(name = "description", length = Integer.MAX_VALUE)
     private String description;
 
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "task_type", columnDefinition = "task_type_enum not null")
     @Enumerated(EnumType.STRING)
     private TaskTypeEnum taskType;
 
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "task_level", columnDefinition = "task_level_enum")
     @Enumerated(EnumType.STRING)
     private TaskLevelEnum taskLevel;
 
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "grade_level", columnDefinition = "grade_level_enum")
     @Enumerated(EnumType.STRING)
     private GradeEnum gradeLevel;
