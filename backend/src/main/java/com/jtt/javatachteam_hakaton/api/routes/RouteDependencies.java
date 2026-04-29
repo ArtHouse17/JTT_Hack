@@ -6,6 +6,7 @@ import com.jtt.javatachteam_hakaton.config.EntityManagerFactoryProvider;
 import com.jtt.javatachteam_hakaton.repository.*;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import com.jtt.javatachteam_hakaton.service.AuthService;
+import com.jtt.javatachteam_hakaton.service.TaskService;
 import jakarta.persistence.EntityManagerFactory;
 
 import javax.sql.DataSource;
@@ -15,6 +16,7 @@ final class RouteDependencies {
 
     private static AttemptService ATTEMPT_SERVICE;
     private static AuthService AUTH_SERVICE;
+    private static TaskService TASK_SERVICE;
 
     private RouteDependencies() {}
 
@@ -41,6 +43,18 @@ final class RouteDependencies {
             );
         }
         return ATTEMPT_SERVICE;
+    }
+
+    static TaskService taskService() {
+        if (TASK_SERVICE == null) {
+            EntityManagerFactory emf = getEmf();
+            TASK_SERVICE = new TaskService(
+                    new TaskRepository(emf),
+                    new TaskOptionRepository(emf),
+                    new AttemptRepository(emf)
+            );
+        }
+        return TASK_SERVICE;
     }
 
     static AuthService authService() {
