@@ -1,7 +1,7 @@
 package com.jtt.javatachteam_hakaton.api.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.jtt.javatachteam_hakaton.config.JwtProvider;
+import com.jtt.javatachteam_hakaton.security.JwtProvider;
 import com.jtt.javatachteam_hakaton.entity.Attempt;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import io.javalin.http.Context;

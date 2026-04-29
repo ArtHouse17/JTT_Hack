@@ -1,6 +1,6 @@
 package com.jtt.javatachteam_hakaton.service;
 
-import com.jtt.javatachteam_hakaton.config.JwtProvider;
+import com.jtt.javatachteam_hakaton.security.JwtProvider;
 import com.jtt.javatachteam_hakaton.entity.User;
 import com.jtt.javatachteam_hakaton.entity.enums.GradeEnum;
 import com.jtt.javatachteam_hakaton.repository.UserRepository;

@@ -1,6 +1,6 @@
 package com.jtt.javatachteam_hakaton.api.handlers;
 
-import com.jtt.javatachteam_hakaton.config.JwtProvider;
+import com.jtt.javatachteam_hakaton.security.JwtProvider;
 import com.jtt.javatachteam_hakaton.entity.User;
 import com.jtt.javatachteam_hakaton.service.UserService;
 import io.javalin.http.Context;
