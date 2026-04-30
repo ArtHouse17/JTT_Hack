@@ -11,22 +11,15 @@ public record AppConfig(
 ) {
     public static AppConfig fromEnvironment() {
         return new AppConfig(
-<<<<<<< Updated upstream
-            read("DB_URL", "jdbc:postgresql://postgres:5432/postgres"),
-            read("DB_USER", "user"),
-            read("DB_PASSWORD", "password"),
-            read("DB_DRIVER", "org.postgresql.Driver"),
-            read("LIQUIBASE_CHANGELOG", "db/changelog/db.changelog-master.xml"),
-            Integer.parseInt(read("PORT", "8080"))
-=======
+                // Оставляем localhost для запуска из IDEA.
+                // Тимлид поменял на postgres, так как готовил это для запуска самого бэкенда внутри Docker.
                 read("DB_URL", "jdbc:postgresql://localhost:5432/postgres"),
                 read("DB_USER", "user"),
                 read("DB_PASSWORD", "password"),
                 read("DB_DRIVER", "org.postgresql.Driver"),
                 read("LIQUIBASE_CHANGELOG", "db/changelog/db.changelog-master.xml"),
-                read("JWT_SECRET", "JavaTachTeamHackathonSuperSecretKeyForJwt2026"), // Добавили чтение секрета
+                read("JWT_SECRET", "JavaTachTeamHackathonSuperSecretKeyForJwt2026"),
                 Integer.parseInt(read("PORT", "8080"))
->>>>>>> Stashed changes
         );
     }
 
