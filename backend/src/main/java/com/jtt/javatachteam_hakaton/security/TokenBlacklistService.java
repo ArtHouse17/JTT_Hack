@@ -18,7 +18,7 @@ public class TokenBlacklistService {
 
     public TokenBlacklistService() {
         cleaner.scheduleAtFixedRate(this::cleanExpiredTokens, 30, 30, TimeUnit.MINUTES);
-        logger.info("TokenBlacklistService initialized");
+        logger.info("TokenBlacklistService инициализирован");
     }
 
     public void blacklist(String token) {
@@ -28,17 +28,17 @@ public class TokenBlacklistService {
 
             if (expiration.after(now)) {
                 blacklistedTokens.put(token, expiration);
-                logger.info("Token blacklisted, expires at: {}", expiration);
+                logger.info("Токен занесен в черный список, срок его действия истекает в: {}", expiration);
 
                 long ttl = expiration.getTime() - now.getTime();
                 cleaner.schedule(() -> {
                     blacklistedTokens.remove(token);
-                    logger.debug("Token removed from blacklist after expiration");
+                    logger.debug("Токен удален из черного списка после истечения срока действия");
                 }, ttl, TimeUnit.MILLISECONDS);
             }
         } catch (Exception e) {
-            logger.error("Failed to blacklist token: {}", e.getMessage());
-            throw new IllegalArgumentException("Invalid token format");
+            logger.error("Не удалось внести токен в черный список: {}", e.getMessage());
+            throw new IllegalArgumentException("Неверный формат токена");
         }
     }
 
@@ -53,7 +53,7 @@ public class TokenBlacklistService {
         int afterSize = blacklistedTokens.size();
 
         if (beforeSize != afterSize) {
-            logger.info("Cleaned {} expired tokens from blacklist", beforeSize - afterSize);
+            logger.info("Удалены просроченные токены {} из черного списка", beforeSize - afterSize);
         }
     }
 
@@ -63,6 +63,6 @@ public class TokenBlacklistService {
 
     public void clear() {
         blacklistedTokens.clear();
-        logger.warn("Token blacklist cleared");
+        logger.warn("Черный список токенов очищен");
     }
 }

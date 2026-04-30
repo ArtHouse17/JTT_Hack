@@ -21,7 +21,7 @@ public class JwtProvider {
 		String secret = AppConfig.fromEnvironment().SECRET();
 		byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
 		SECRET_KEY = Keys.hmacShaKeyFor(secretBytes);
-		logger.info("JwtProvider initialized");
+		logger.info("JwtProvider инициализирован");
 	}
 
 	public static String generateToken(UUID userId) {
@@ -46,16 +46,16 @@ public class JwtProvider {
 					.parseSignedClaims(token)
 					.getPayload();
 		} catch (ExpiredJwtException e) {
-			logger.warn("Token expired: {}", e.getMessage());
+			logger.warn("Срок действия токена истек: {}", e.getMessage());
 			throw e;
 		} catch (MalformedJwtException e) {
-			logger.warn("Malformed token: {}", e.getMessage());
+			logger.warn("Некорректно сформированный токен: {}", e.getMessage());
 			throw e;
 		} catch (SecurityException e) {
-			logger.warn("Invalid signature: {}", e.getMessage());
+			logger.warn("Неверная подпись: {}", e.getMessage());
 			throw e;
 		} catch (JwtException e) {
-			logger.warn("Invalid token: {}", e.getMessage());
+			logger.warn("Недействительный токен: {}", e.getMessage());
 			throw e;
 		}
 	}

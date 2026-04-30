@@ -31,48 +31,48 @@ public class AuthMiddleware {
         String token = extractToken(ctx);
 
         if (token == null) {
-            logger.warn("Missing authorization token for request: {} {}",
+            logger.warn("Отсутствует токен авторизации для запроса: {} {}",
                     ctx.method(), ctx.path());
-            throw new UnauthorizedResponse("Missing authorization token");
+            throw new UnauthorizedResponse("Отсутствует токен авторизации");
         }
 
         try {
             if (tokenBlacklistService.isBlacklisted(token)) {
-                logger.warn("Blacklisted token used for request: {} {}",
+                logger.warn("Для запроса использован токен из черного списка: {} {}",
                         ctx.method(), ctx.path());
-                throw new UnauthorizedResponse("Token has been invalidated. Please login again.");
+                throw new UnauthorizedResponse("Токен недействителен. Пожалуйста, войдите снова.");
             }
 
             UUID userId = JwtProvider.extractUserId(token);
 
             if (JwtProvider.isExpired(token)) {
-                logger.warn("Expired token used by user: {}", userId);
-                throw new UnauthorizedResponse("Token has expired");
+                logger.warn("Использованный пользователем токен просрочен: {}", userId);
+                throw new UnauthorizedResponse("Срок действия токена истек");
             }
 
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UnauthorizedResponse("User not found"));
+                    .orElseThrow(() -> new UnauthorizedResponse("Пользователь не найден"));
 
             ctx.attribute("userId", userId);
             ctx.attribute("user", user);
             ctx.attribute("roles", user.getRole());
             ctx.attribute("token", token);
 
-            logger.debug("User {} authenticated successfully for request: {} {}",
+            logger.debug("Пользователь {} успешно аутентифицирован для выполнения запроса: {} {}",
                     userId, ctx.method(), ctx.path());
 
         } catch (ExpiredJwtException e) {
-            logger.warn("Expired JWT token: {}", e.getMessage());
-            throw new UnauthorizedResponse("Token has expired. Please login again.");
+            logger.warn("Истекший JWT-токен: {}", e.getMessage());
+            throw new UnauthorizedResponse("Срок действия токена истек. Пожалуйста, войдите снова.");
         } catch (MalformedJwtException e) {
-            logger.warn("Malformed JWT token: {}", e.getMessage());
-            throw new UnauthorizedResponse("Invalid token format");
+            logger.warn("Некорректно сформированный JWT-токен: {}", e.getMessage());
+            throw new UnauthorizedResponse("Неверный формат токена");
         } catch (SignatureException e) {
-            logger.warn("Invalid JWT signature: {}", e.getMessage());
-            throw new UnauthorizedResponse("Invalid token signature");
+            logger.warn("Недействительная JWT-подпись: {}", e.getMessage());
+            throw new UnauthorizedResponse("Недействительная подпись токена");
         } catch (Exception e) {
-            logger.error("Unexpected error during authentication: {}", e.getMessage());
-            throw new UnauthorizedResponse("Authentication failed");
+            logger.error("Непредвиденная ошибка во время аутентификации: {}", e.getMessage());
+            throw new UnauthorizedResponse("Аутентификация не удалась");
         }
     }
 
@@ -90,7 +90,7 @@ public class AuthMiddleware {
                 }
             }
         } catch (Exception e) {
-            logger.debug("Optional authentication failed: {}", e.getMessage());
+            logger.debug("Дополнительная аутентификация не удалась: {}", e.getMessage());
         }
     }
 
@@ -101,17 +101,17 @@ public class AuthMiddleware {
             String userRole = ctx.attribute("roles");
 
             if (userRole == null) {
-                logger.warn("No role found for user, denying access");
-                throw new ForbiddenResponse("Access denied: no role assigned");
+                logger.warn("Роль для пользователя не найдена, доступ запрещен");
+                throw new ForbiddenResponse("Доступ запрещен: роль не назначена");
             }
 
             if (!allowedRoleSet.contains(userRole.toUpperCase())) {
-                logger.warn("User with role {} attempted to access resource requiring roles: {}",
+                logger.warn("Пользователь с ролью {} попытался получить доступ к ресурсу, требующему определенных ролей: {}",
                         userRole, String.join(", ", allowedRoles));
-                throw new ForbiddenResponse("Access denied: insufficient permissions");
+                throw new ForbiddenResponse("Доступ запрещен: недостаточные права доступа");
             }
 
-            logger.debug("Role check passed for role: {}", userRole);
+            logger.debug("Проверка соответствия роли пройдена: {}", userRole);
         };
     }
 
@@ -124,11 +124,11 @@ public class AuthMiddleware {
             boolean isAdmin = "ADMIN".equalsIgnoreCase(userRole);
 
             if (!isAdmin && !userId.equals(resourceOwnerId)) {
-                logger.warn("User {} attempted to access resource owned by {}", userId, resourceOwnerId);
-                throw new ForbiddenResponse("Access denied: you can only access your own resources");
+                logger.warn("Пользователь {} попытался получить доступ к ресурсу, принадлежащему {}", userId, resourceOwnerId);
+                throw new ForbiddenResponse("Доступ запрещен: вы можете получить доступ только к своим собственным ресурсам");
             }
 
-            logger.debug("Ownership check passed for user: {}", userId);
+            logger.debug("Проверка прав собственности для пользователя пройдена: {}", userId);
         };
     }
 
