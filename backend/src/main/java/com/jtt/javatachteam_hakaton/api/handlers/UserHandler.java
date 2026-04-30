@@ -15,7 +15,6 @@ public class UserHandler {
         this.userService = userService;
     }
 
-    // Вспомогательный метод для извлечения ID пользователя из токена
     private UUID getUserIdFromToken(Context ctx) {
         String authHeader = ctx.header("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -32,7 +31,6 @@ public class UserHandler {
         UUID userId = getUserIdFromToken(ctx);
         User user = userService.getCurrentUser(userId);
 
-        // Возвращаем DTO, чтобы не светить хеш пароля на фронтенде
         ctx.json(new UserProfileResponse(
                 user.getId().toString(),
                 user.getUsername(),
@@ -49,9 +47,13 @@ public class UserHandler {
 
     public void resetCurrentUserProgress(Context ctx) {
         UUID userId = getUserIdFromToken(ctx);
-        ctx.json(userService.resetUserProgress(userId));
+
+        userService.resetUserProgress(userId);
+
+        ctx.json(new MessageResponse("Прогресс успешно сброшен"));
     }
 
-    // DTO для безопасного ответа
     public record UserProfileResponse(String id, String username, String firstname, String lastname, String gradeLevel) {}
+
+    public record MessageResponse(String message) {}
 }
