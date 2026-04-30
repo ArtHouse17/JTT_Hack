@@ -38,6 +38,36 @@ public class AttemptRepository {
         }
     }
 
+    // Получить все попытки пользователя с информацией о задачах (JOIN FETCH для оптимизации)
+    public List<Attempt> findByUserId(UUID userId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            // Используем JOIN FETCH для загрузки связанных задач (n+1 проблема)
+            return entityManager
+                    .createQuery("select a from Attempt a join fetch a.task where a.user.id = :userId", Attempt.class)
+                    .setParameter("userId", userId)
+                    .getResultList();
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    public void deleteByUserId(UUID userId) {
+        inTransaction(entityManager -> {
+            entityManager.createQuery(
+                            "delete from AttemptAnswer aa where aa.attempt.id in (select a.id from Attempt a where a.user.id = :userId)")
+                    .setParameter("userId", userId)
+                    .executeUpdate();
+
+            entityManager.createQuery(
+                            "delete from Attempt a where a.user.id = :userId")
+                    .setParameter("userId", userId)
+                    .executeUpdate();
+
+            return null;
+        });
+    }
+
     public List<Attempt> findByUserIdAndTaskId(UUID userId, UUID taskId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
