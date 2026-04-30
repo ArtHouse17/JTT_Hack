@@ -1,6 +1,6 @@
 package com.jtt.javatachteam_hakaton.api.handlers;
 
-import com.jtt.javatachteam_hakaton.api.dto.TaskAttemptRequestDto;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.jtt.javatachteam_hakaton.api.dto.TaskAttemptResponseDto;
 import com.jtt.javatachteam_hakaton.config.JwtProvider;
 import com.jtt.javatachteam_hakaton.entity.Attempt;
@@ -52,25 +52,26 @@ public class TaskHandler {
         UUID userId = getUserIdFromToken(ctx, true)
             .orElseThrow(() -> new UnauthorizedResponse("Необходима авторизация"));
 
+        JsonNode payload = ctx.bodyAsClass(JsonNode.class);
+        JsonNode answerNode = payload.get("answer");
         List<UUID> selectedOptionIds = new ArrayList<>();
         String textAnswer = null;
-        TaskAttemptRequestDto payload = ctx.bodyAsClass(TaskAttemptRequestDto.class);
 
-        if (payload.answer() instanceof List<?> answers) {
-            for (Object answer : answers) {
-                if (!(answer instanceof String optionId)) {
-                    throw new BadRequestResponse("For test tasks answer must contain option ids");
+        if (answerNode != null && answerNode.isArray()) {
+            for (JsonNode answer : answerNode) {
+                if (!answer.isTextual()) {
+                    throw new BadRequestResponse("Для тестовых заданий ответ должен содержать id вариантов.");
                 }
                 try {
-                    selectedOptionIds.add(UUID.fromString(optionId));
+                    selectedOptionIds.add(UUID.fromString(answer.asText()));
                 } catch (IllegalArgumentException exception) {
-                    throw new BadRequestResponse("Invalid option id: " + optionId);
+                    throw new BadRequestResponse("Неверный id опции: " + answer.asText());
                 }
             }
-        } else if (payload.answer() instanceof String answer) {
-            textAnswer = answer;
+        } else if (answerNode != null && answerNode.isTextual()) {
+            textAnswer = answerNode.asText();
         } else {
-            throw new BadRequestResponse("Field 'answer' must be either string or array of strings");
+            throw new BadRequestResponse("Поле 'answer' должно быть либо строкой, либо массивом строк.");
         }
 
         Attempt attempt;

@@ -25,7 +25,4 @@ public class TaskOption {
 
     @Column(name = "is_correct", nullable = false)
     private Boolean isCorrect;
-
-    @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder;
 }
