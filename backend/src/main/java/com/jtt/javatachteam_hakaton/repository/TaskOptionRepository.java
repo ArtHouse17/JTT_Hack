@@ -42,7 +42,7 @@ public class TaskOptionRepository {
         try {
             return entityManager
                 .createQuery(
-                    "select to from TaskOption to where to.task.id = :taskId",
+                    "select to from TaskOption to where to.task.id = :taskId order by to.id asc",
                     TaskOption.class
                 )
                 .setParameter("taskId", taskId)
@@ -57,7 +57,7 @@ public class TaskOptionRepository {
         try {
             return entityManager
                 .createQuery(
-                    "select to from TaskOption to where to.task.id = :taskId and to.isCorrect = true",
+                    "select to from TaskOption to where to.task.id = :taskId and to.isCorrect = true order by to.id asc",
                     TaskOption.class
                 )
                 .setParameter("taskId", taskId)

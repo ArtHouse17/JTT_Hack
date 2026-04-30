@@ -10,7 +10,9 @@ import com.jtt.javatachteam_hakaton.repository.TaskRepository;
 import com.jtt.javatachteam_hakaton.repository.UserRepository;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class AttemptService {
@@ -37,6 +39,8 @@ public class AttemptService {
 				.orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
 		Task task = taskRepository.findById(taskId)
 				.orElseThrow(() -> new IllegalArgumentException("Задание не найдено"));
+		List<TaskOption> taskOptions = taskOptionRepository.findByTaskId(task.getId());
+		validateAnswerFormat(task.getTaskType(), selectedOptionIds, textAnswer);
 
 		Attempt attempt = new Attempt();
 		attempt.setUser(user);
@@ -48,56 +52,66 @@ public class AttemptService {
 		int earnedPoints = 0;
 
 		if (task.getTaskType() == TaskTypeEnum.TEST) {
-			earnedPoints = calculateTestPoints(task, selectedOptionIds);
+			earnedPoints = calculateTestPoints(task, taskOptions, selectedOptionIds);
 
 		} else if (task.getTaskType() == TaskTypeEnum.ERROR_SEARCH) {
 			attempt.setWrittenText(textAnswer);
-			earnedPoints = calculateErrorSearchPoints(task, textAnswer);
+			earnedPoints = calculateTextMatchPoints(task, taskOptions, textAnswer);
 
 		} else if (task.getTaskType() == TaskTypeEnum.OPEN) {
 			attempt.setWrittenText(textAnswer);
-			// TODO: Реализовать SQL-тренажер.
-			// Пользователь пишет SQL-запрос на фронтенде -> мы прогоняем его на бэкенде в изолированной БД (песочнице)
-			// -> сравниваем вывод с эталонным результатом из нашей БД -> начисляем баллы.
-			earnedPoints = 0;
+			earnedPoints = calculateTextMatchPoints(task, taskOptions, textAnswer);
 		}
 
 		attempt.setEarnedPoints(earnedPoints);
 		Attempt savedAttempt = attemptRepository.save(attempt);
 
 		if (task.getTaskType() == TaskTypeEnum.TEST && selectedOptionIds != null) {
-			saveAttemptAnswers(savedAttempt, selectedOptionIds);
+			saveAttemptAnswers(savedAttempt, taskOptions, selectedOptionIds);
 		}
 
 		return savedAttempt;
 	}
 
-	private int calculateTestPoints(Task task, List<UUID> selectedOptionIds) {
+	private void validateAnswerFormat(TaskTypeEnum taskType, List<UUID> selectedOptionIds, String textAnswer) {
+		boolean hasSelectedOptions = selectedOptionIds != null && !selectedOptionIds.isEmpty();
+		boolean hasTextAnswer = textAnswer != null;
+
+		if (taskType == TaskTypeEnum.TEST && hasTextAnswer) {
+			throw new IllegalArgumentException("Для тестового задания answer должен быть массивом option id");
+		}
+
+		if ((taskType == TaskTypeEnum.ERROR_SEARCH || taskType == TaskTypeEnum.OPEN) && hasSelectedOptions) {
+			throw new IllegalArgumentException("Для текстового задания answer должен быть строкой");
+		}
+	}
+
+	private int calculateTestPoints(Task task, List<TaskOption> taskOptions, List<UUID> selectedOptionIds) {
 		if (selectedOptionIds == null || selectedOptionIds.isEmpty()) return 0;
 
-		List<TaskOption> options = taskOptionRepository.findByTaskId(task.getId());
-		long correctCount = options.stream().filter(TaskOption::getIsCorrect).count();
-		long userCorrect = options.stream()
+		Set<UUID> selectedIds = new HashSet<>(selectedOptionIds);
+		long correctCount = taskOptions.stream().filter(TaskOption::getIsCorrect).count();
+		long userCorrect = taskOptions.stream()
 				.filter(opt -> selectedOptionIds.contains(opt.getId()) && opt.getIsCorrect()).count();
-		long userWrong = options.stream()
+		long userWrong = taskOptions.stream()
 				.filter(opt -> selectedOptionIds.contains(opt.getId()) && !opt.getIsCorrect()).count();
+		long validSelected = taskOptions.stream()
+				.filter(opt -> selectedIds.contains(opt.getId()))
+				.count();
 
-		if (userWrong > 0 || correctCount == 0) return 0;
+		if (userWrong > 0 || correctCount == 0 || validSelected != selectedIds.size()) return 0;
 		return (int) Math.round(((double) userCorrect / correctCount) * task.getMaxPoints());
 	}
 
-	// Автопроверка заданий на поиск ошибок
-	private int calculateErrorSearchPoints(Task task, String textAnswer) {
+	private int calculateTextMatchPoints(Task task, List<TaskOption> taskOptions, String textAnswer) {
 		if (textAnswer == null || textAnswer.trim().isEmpty()) return 0;
 
-		List<TaskOption> options = taskOptionRepository.findByTaskId(task.getId());
-		String correctAnswer = options.stream()
+		String correctAnswer = taskOptions.stream()
 				.filter(TaskOption::getIsCorrect)
 				.map(TaskOption::getContent)
 				.findFirst()
 				.orElse("");
 
-		// Нормализация
 		String normalizedUserAnswer = textAnswer.replaceAll("\\s+", " ").trim().toLowerCase();
 		String normalizedCorrectAnswer = correctAnswer.replaceAll("\\s+", " ").trim().toLowerCase();
 
@@ -107,15 +121,15 @@ public class AttemptService {
 		return 0;
 	}
 
-	// Сохранение выбранных вариантов
-	private void saveAttemptAnswers(Attempt attempt, List<UUID> optionIds) {
-		for (UUID optionId : optionIds) {
-			taskOptionRepository.findById(optionId).ifPresent(option -> {
+	private void saveAttemptAnswers(Attempt attempt, List<TaskOption> taskOptions, List<UUID> optionIds) {
+		Set<UUID> optionIdSet = new HashSet<>(optionIds);
+		for (TaskOption option : taskOptions) {
+			if (optionIdSet.contains(option.getId())) {
 				AttemptAnswer answer = new AttemptAnswer();
 				answer.setAttempt(attempt);
 				answer.setTaskOption(option);
 				attemptAnswerRepository.save(answer);
-			});
+			}
 		}
 	}
 }
