@@ -13,8 +13,7 @@ import java.util.UUID;
 public class UserService {
 	private final UserRepository userRepository;
 	private final AttemptRepository attemptRepository;
-	// TODO: В будущем сюда можно добавить TaskRepository,
-	// чтобы доставать общее количество всех заданий в системе для полей "Total".
+	// TODO: В будущем сюда можно добавить остальные репозитории,
 
 	public UserService(UserRepository userRepository, AttemptRepository attemptRepository) {
 		this.userRepository = userRepository;
