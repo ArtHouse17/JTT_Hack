@@ -1,5 +1,3 @@
-import { PROGRESS_EXAMPLE } from './examples'
-
 export type Progress = {
   /** Максимально возможное количество баллов */
   pointsTotal: number
@@ -19,6 +17,22 @@ export type Progress = {
   openTasksSolved: number
 }
 
-export async function getProgress() {
-  return PROGRESS_EXAMPLE
+export async function getProgress(): Promise<Progress> {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users/me/progress`, {
+    credentials: 'include',
+  })
+  if (response.status === 401) {
+    window.location.href = '/login'
+  }
+  return await response.json()
+}
+
+export async function resetProgress(): Promise<void> {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users/me/progress`, {
+    method: 'DELETE',
+    credentials: 'include',
+  })
+  if (response.status === 401) {
+    window.location.href = '/login'
+  }
 }

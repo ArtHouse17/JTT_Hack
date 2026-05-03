@@ -12,13 +12,19 @@ export function ProgressPage() {
   const tasksSolved =
     progress.testTasksSolved + progress.mistakesTasksSolved + progress.openTasksSolved
 
-  const pointsPercentage = Math.round((progress.pointsEarned / progress.pointsTotal) * 100)
+  function calculatePercentage(value: number, total: number): number {
+    return total === 0 ? 0 : Math.round((value / total) * 100)
+  }
+
+  const pointsPercentage = calculatePercentage(progress.pointsEarned, progress.pointsTotal)
 
   const chartData = [
     { name: 'Тестовые задания', value: progress.testTasksSolved },
     { name: 'Поиск ошибок', value: progress.mistakesTasksSolved },
     { name: 'Открытые задания', value: progress.openTasksSolved },
   ]
+
+  const hasSolvedTasks = chartData.some((item) => item.value > 0)
 
   const chartConfig: ChartData = {
     series: {
@@ -47,28 +53,32 @@ export function ProgressPage() {
         <ul className="mt-12 leading-6">
           <li>
             Решено заданий: {tasksTotal}/{tasksSolved} (
-            {Math.round((tasksSolved / tasksTotal) * 100)}
+            {calculatePercentage(tasksSolved, tasksTotal)}
             %)
           </li>
 
           <li>
             Тестовые задания: {progress.testTasksSolved}/{progress.testTasksTotal} (
-            {Math.round((progress.testTasksSolved / progress.testTasksTotal) * 100)}%)
+            {calculatePercentage(progress.testTasksSolved, progress.testTasksTotal)}%)
           </li>
 
           <li>
             Поиск ошибок: {progress.mistakesTasksSolved}/{progress.mistakesTasksTotal} (
-            {Math.round((progress.mistakesTasksSolved / progress.mistakesTasksTotal) * 100)}%)
+            {calculatePercentage(progress.mistakesTasksSolved, progress.mistakesTasksTotal)}%)
           </li>
 
           <li>
             Открытые задания: {progress.openTasksSolved}/{progress.openTasksTotal} (
-            {Math.round((progress.openTasksSolved / progress.openTasksTotal) * 100)}%)
+            {calculatePercentage(progress.openTasksSolved, progress.openTasksTotal)}%)
           </li>
         </ul>
 
         <div className="h-54 w-full">
-          <Chart data={chartConfig} />
+          {hasSolvedTasks ? (
+            <Chart data={chartConfig} />
+          ) : (
+            <div className="pt-20 text-center text-gray-500">Пока нет решённых заданий</div>
+          )}
         </div>
       </div>
     </div>
