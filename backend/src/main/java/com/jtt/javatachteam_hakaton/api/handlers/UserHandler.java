@@ -1,6 +1,5 @@
 package com.jtt.javatachteam_hakaton.api.handlers;
 
-import com.jtt.javatachteam_hakaton.config.JwtProvider;
 import com.jtt.javatachteam_hakaton.entity.User;
 import com.jtt.javatachteam_hakaton.service.UserService;
 import io.javalin.http.Context;
@@ -15,20 +14,11 @@ public class UserHandler {
         this.userService = userService;
     }
 
-    private UUID getUserIdFromToken(Context ctx) {
-        String authHeader = ctx.header("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+    public void currentUser(Context ctx) {
+        UUID userId = (UUID) ctx.attribute("userId");
+        if (userId == null) {
             throw new UnauthorizedResponse("Необходима авторизация");
         }
-        try {
-            return JwtProvider.extractUserId(authHeader.substring(7));
-        } catch (Exception e) {
-            throw new UnauthorizedResponse("Невалидный токен");
-        }
-    }
-
-    public void currentUser(Context ctx) {
-        UUID userId = getUserIdFromToken(ctx);
         User user = userService.getCurrentUser(userId);
 
         ctx.json(new UserProfileResponse(
@@ -41,12 +31,18 @@ public class UserHandler {
     }
 
     public void currentUserProgress(Context ctx) {
-        UUID userId = getUserIdFromToken(ctx);
+        UUID userId = (UUID) ctx.attribute("userId");
+        if (userId == null) {
+            throw new UnauthorizedResponse("Необходима авторизация");
+        }
         ctx.json(userService.getUserProgress(userId));
     }
 
     public void resetCurrentUserProgress(Context ctx) {
-        UUID userId = getUserIdFromToken(ctx);
+        UUID userId = (UUID) ctx.attribute("userId");
+        if (userId == null) {
+            throw new UnauthorizedResponse("Необходима авторизация");
+        }
 
         userService.resetUserProgress(userId);
 
