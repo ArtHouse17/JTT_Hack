@@ -1,5 +1,3 @@
-import { TASK_ATTEMPT_RESPONSE_EXAMPLE } from './examples'
-
 export type TaskAttemptRequest = {
   /**
    * Ответ пользователя.
@@ -17,8 +15,18 @@ export type TaskAttemptResponse = {
 /** POST /tasks/{taskId}/attempts */
 export async function postTaskAttempt(
   taskId: string,
-  answer: TaskAttemptRequest,
+  request: TaskAttemptRequest,
 ): Promise<TaskAttemptResponse> {
-  console.log(taskId, answer)
-  return TASK_ATTEMPT_RESPONSE_EXAMPLE
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tasks/${taskId}/attempts`, {
+    credentials: 'include',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  })
+  if (response.status === 401) {
+    window.location.href = '/login'
+  }
+  return await response.json()
 }

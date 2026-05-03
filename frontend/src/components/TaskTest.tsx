@@ -5,6 +5,7 @@ import { useState } from 'react'
 import type { TaskAttemptResponse, TaskAttemptRequest } from '../api/attempts'
 import { postTaskAttempt } from '../api/attempts'
 import type { TestTask } from '../api/tasks'
+import { formatPoints } from '../utils'
 
 export function TaskTest({ task }: { task: TestTask }) {
   const [answer, setAnswer] = useState<string[]>([])
@@ -41,13 +42,21 @@ export function TaskTest({ task }: { task: TestTask }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Text>{task.question}</Text>
+      <div className="mb-2 flex items-center gap-2 text-[11px]">
+        <Text color="secondary">{formatPoints(task.points)}</Text>
+        <span className="text-gray-400">•</span>
+        {solved ? (
+          <Label theme="success" className="text-[11px]">
+            Решено
+          </Label>
+        ) : (
+          <Label theme="normal" className="text-[11px]">
+            Не решено
+          </Label>
+        )}
+      </div>
 
-      {solved && (
-        <Label theme="success" className="ml-2">
-          Решено
-        </Label>
-      )}
+      <Text>{task.question}</Text>
 
       <ul className="mt-2">
         {task.options.map((option) => (
@@ -86,8 +95,8 @@ export function TaskTest({ task }: { task: TestTask }) {
               </>
             ) : (
               <>
-                <Icon data={Xmark} color="positive" />
-                <Text color="positive">Неправильно</Text>
+                <Icon data={Xmark} color="danger" />
+                <Text color="danger">Неправильно</Text>
               </>
             )}
           </div>

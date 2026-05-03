@@ -5,6 +5,7 @@ import { useState } from 'react'
 import type { TaskAttemptRequest, TaskAttemptResponse } from '../api/attempts'
 import { postTaskAttempt } from '../api/attempts'
 import type { MistakesTask } from '../api/tasks'
+import { formatPoints } from '../utils'
 
 export function TaskMistakes({ task }: { task: MistakesTask }) {
   const [answer, setAnswer] = useState(task.answer)
@@ -22,7 +23,7 @@ export function TaskMistakes({ task }: { task: MistakesTask }) {
     },
   })
 
-  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     mutation.mutate({ answer })
     setPrevAnswer(answer)
@@ -40,13 +41,21 @@ export function TaskMistakes({ task }: { task: MistakesTask }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Text>{task.question}</Text>
+      <div className="mb-2 flex items-center gap-2 text-[11px]">
+        <Text color="secondary">{formatPoints(task.points)}</Text>
+        <span className="text-gray-400">•</span>
+        {solved ? (
+          <Label theme="success" className="text-[11px]">
+            Решено
+          </Label>
+        ) : (
+          <Label theme="normal" className="text-[11px]">
+            Не решено
+          </Label>
+        )}
+      </div>
 
-      {solved && (
-        <Label theme="success" className="ml-2">
-          Решено
-        </Label>
-      )}
+      <Text>{task.question}</Text>
 
       <TextArea className="mt-3" value={answer} onChange={handleChange}></TextArea>
 
@@ -72,8 +81,8 @@ export function TaskMistakes({ task }: { task: MistakesTask }) {
               </>
             ) : (
               <>
-                <Icon data={Xmark} color="positive" />
-                <Text color="positive">Неправильно</Text>
+                <Icon data={Xmark} color="danger" />
+                <Text color="danger">Неправильно</Text>
               </>
             )}
           </div>

@@ -1,11 +1,15 @@
-import { NavLink, Outlet } from 'react-router'
+import { NavLink, Outlet, useNavigate } from 'react-router'
 import { Icon, User } from '@gravity-ui/uikit'
 import { Avatar, Text, DropdownMenu } from '@gravity-ui/uikit'
 import { Person, ArrowRotateRight, ArrowRightFromSquare } from '@gravity-ui/icons'
 import { getUserInfo } from './api/users'
+import { resetProgress } from './api/progress'
+import { logout } from './api/auth'
 import { useQuery } from '@tanstack/react-query'
 
 export function App() {
+  const navigate = useNavigate()
+
   const { data: userInfo } = useQuery({ queryKey: ['userInfo'], queryFn: getUserInfo })
 
   if (!userInfo) return null
@@ -28,12 +32,18 @@ export function App() {
           <DropdownMenu
             items={[
               {
-                action: () => alert('Прогресс сброшен'),
+                action: () => {
+                  resetProgress()
+                  window.location.reload()
+                },
                 iconStart: <Icon data={ArrowRotateRight} />,
                 text: <Text>Сбросить прогресс</Text>,
               },
               {
-                action: () => alert('Вы вышли из аккаунта'),
+                action: () => {
+                  logout()
+                  navigate('/login')
+                },
                 iconStart: <Icon data={ArrowRightFromSquare} color="danger" />,
                 text: <Text color="danger">Выйти</Text>,
               },
