@@ -14,6 +14,7 @@ import com.jtt.javatachteam_hakaton.security.AuthMiddleware;
 import com.jtt.javatachteam_hakaton.security.TokenBlacklistService;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import com.jtt.javatachteam_hakaton.service.AuthService;
+import com.jtt.javatachteam_hakaton.service.TaskService;
 import com.jtt.javatachteam_hakaton.service.UserService;
 import io.javalin.Javalin;
 import jakarta.persistence.EntityManagerFactory;
@@ -47,6 +48,7 @@ public final class Main {
         // --- Инициализация сервисов ---
         AttemptService attemptService = new AttemptService(attemptRepository,
                 attemptAnswerRepository, taskRepository, userRepository, taskOptionRepository);
+        TaskService taskService = new TaskService(taskRepository, taskOptionRepository, attemptRepository);
         AuthService authService = new AuthService(userRepository);
         UserService userService = new UserService(userRepository, attemptRepository);
 
@@ -55,7 +57,7 @@ public final class Main {
         AuthMiddleware authMiddleware = new AuthMiddleware(tokenBlacklistService, userRepository);
 
         // --- Инициализация хендлеров ---
-        TaskHandler taskHandler = new TaskHandler(attemptService);
+        TaskHandler taskHandler = new TaskHandler(taskService, attemptService);
         AuthHandler authHandler = new AuthHandler(authService, tokenBlacklistService);
         HealthHandler healthHandler = new HealthHandler();
         UserHandler userHandler = new UserHandler(userService);

@@ -25,5 +25,4 @@ public class TaskOption {
 
     @Column(name = "is_correct", nullable = false)
     private Boolean isCorrect;
-
 }

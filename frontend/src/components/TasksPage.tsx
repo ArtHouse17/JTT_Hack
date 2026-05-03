@@ -1,4 +1,4 @@
-import { SegmentedRadioGroup } from '@gravity-ui/uikit'
+import { Checkbox, SegmentedRadioGroup } from '@gravity-ui/uikit'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getTasks } from '../api/tasks'
@@ -8,27 +8,37 @@ import { TaskOpen } from './TaskOpen'
 
 export function TasksPage() {
   const [type, setType] = useState<'test' | 'mistakes' | 'open'>('test')
+  const [onlyUnsolved, setOnlyUnsolved] = useState(false)
 
   const { data: tasks } = useQuery({
     queryKey: ['tasks', type],
     queryFn: () => getTasks(type),
   })
 
+  const filteredTasks = tasks?.filter((task) => !onlyUnsolved || !task.solved)
+
   return (
     <>
-      <SegmentedRadioGroup
-        options={[
-          { content: 'Тестовые', value: 'test' },
-          { content: 'Поиск ошибок', value: 'mistakes' },
-          { content: 'Открытые', value: 'open' },
-        ]}
-        onChange={(event) => setType(event.target.value as typeof type)}
-        value={type}
-      />
+      <div className="flex items-center justify-between">
+        <SegmentedRadioGroup
+          options={[
+            { content: 'Тестовые', value: 'test' },
+            { content: 'Поиск ошибок', value: 'mistakes' },
+            { content: 'Открытые', value: 'open' },
+          ]}
+          onChange={(event) => setType(event.target.value as typeof type)}
+          value={type}
+        />
+        <Checkbox
+          checked={onlyUnsolved}
+          onChange={(event) => setOnlyUnsolved(event.target.checked)}
+          content="Только нерешённые"
+        />
+      </div>
 
-      {tasks && (
+      {filteredTasks && (
         <div className="my-6 flex flex-col gap-6">
-          {tasks.map((task) => {
+          {filteredTasks.map((task) => {
             switch (task.type) {
               case 'test':
                 return <TaskTest task={task} />

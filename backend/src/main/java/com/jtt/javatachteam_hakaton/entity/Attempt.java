@@ -5,8 +5,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -31,6 +33,7 @@ public class Attempt {
     @JoinColumn(name = "task_id")
     private Task task;
 
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @ColumnDefault("'IN_PROGRESS'")
     @Column(name = "status", columnDefinition = "attempt_status_enum not null")
     @Enumerated(EnumType.STRING)

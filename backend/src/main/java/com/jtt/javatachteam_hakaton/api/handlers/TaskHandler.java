@@ -1,73 +1,98 @@
 package com.jtt.javatachteam_hakaton.api.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jtt.javatachteam_hakaton.api.dto.TaskAttemptResponseDto;
 import com.jtt.javatachteam_hakaton.entity.Attempt;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
+import com.jtt.javatachteam_hakaton.service.TaskService;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.javalin.http.NotFoundResponse;
+import io.javalin.http.UnauthorizedResponse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class TaskHandler {
-    private static final Logger logger = LoggerFactory.getLogger(TaskHandler.class);
-
+    private final TaskService taskService;
     private final AttemptService attemptService;
 
-    public TaskHandler(AttemptService attemptService) {
+    public TaskHandler(TaskService taskService, AttemptService attemptService) {
+        this.taskService = taskService;
         this.attemptService = attemptService;
     }
 
     public void tasks(Context ctx) {
-        // TODO: Реализовать получение всех заданий с пагинацией и фильтрацией
-        ctx.status(501).result("Метод GET /tasks пока не реализован");
-    }
+        String type = ctx.queryParam("type");
+        UUID userId = (UUID) ctx.attribute("userId");
 
-    public void taskById(Context ctx) {
-        // TODO: Реализовать получение задания по ID с деталями
-        ctx.status(501).result("Метод GET /tasks/{taskId} пока не реализован");
-    }
-
-    public void submitTaskAttempt(Context ctx) {
         try {
-            // userId уже установлен в middleware, не нужно проверять токен заново!
-            UUID userId = ctx.attribute("userId");
-            UUID taskId = UUID.fromString(ctx.pathParam("taskId"));
-
-            JsonNode payload = ctx.bodyAsClass(JsonNode.class);
-            JsonNode answerNode = payload.get("answer");
-
-            List<UUID> selectedOptionIds = new ArrayList<>();
-            String textAnswer = null;
-
-            if (answerNode != null && answerNode.isArray()) {
-                for (JsonNode node : answerNode) {
-                    selectedOptionIds.add(UUID.fromString(node.asText()));
-                }
-            } else if (answerNode != null && answerNode.isTextual()) {
-                textAnswer = answerNode.asText();
-            }
-
-            logger.info("User {} submitted attempt for task {}", userId, taskId);
-
-            Attempt attempt = attemptService.createAndCompleteAttempt(
-                    userId, taskId, selectedOptionIds, textAnswer
-            );
-
-            boolean isSuccess = attempt.getEarnedPoints() > 0;
-            ctx.json(new TaskAttemptResponse(isSuccess));
-
-        } catch (IllegalArgumentException e) {
-            logger.warn("Invalid task ID format: {}", ctx.pathParam("taskId"));
-            ctx.status(400).json(Map.of("error", "Invalid task ID format"));
-        } catch (Exception e) {
-            logger.error("Error submitting attempt: {}", e.getMessage());
-            ctx.status(500).json(Map.of("error", "Failed to submit attempt"));
+            ctx.json(taskService.getTasksByType(type, userId));
+        } catch (IllegalArgumentException exception) {
+            throw new BadRequestResponse(exception.getMessage());
         }
     }
 
-    public record TaskAttemptResponse(boolean correct) {}
+    public void taskById(Context ctx) {
+        UUID taskId = parseTaskId(ctx);
+        UUID userId = (UUID) ctx.attribute("userId");
+
+        try {
+            ctx.json(taskService.getTaskById(taskId, userId));
+        } catch (IllegalArgumentException exception) {
+            throw new NotFoundResponse(exception.getMessage());
+        }
+    }
+
+    public void submitTaskAttempt(Context ctx) {
+        UUID taskId = parseTaskId(ctx);
+        UUID userId = (UUID) ctx.attribute("userId");
+        if (userId == null) {
+            throw new UnauthorizedResponse("Необходима авторизация");
+        }
+
+        JsonNode payload = ctx.bodyAsClass(JsonNode.class);
+        JsonNode answerNode = payload.get("answer");
+        List<UUID> selectedOptionIds = new ArrayList<>();
+        String textAnswer = null;
+
+        if (answerNode != null && answerNode.isArray()) {
+            for (JsonNode answer : answerNode) {
+                if (!answer.isTextual()) {
+                    throw new BadRequestResponse("Для тестовых заданий ответ должен содержать id вариантов.");
+                }
+                try {
+                    selectedOptionIds.add(UUID.fromString(answer.asText()));
+                } catch (IllegalArgumentException exception) {
+                    throw new BadRequestResponse("Неверный id опции: " + answer.asText());
+                }
+            }
+        } else if (answerNode != null && answerNode.isTextual()) {
+            textAnswer = answerNode.asText();
+        } else {
+            throw new BadRequestResponse("Поле 'answer' должно быть либо строкой, либо массивом строк.");
+        }
+
+        Attempt attempt;
+        try {
+            attempt = attemptService.createAndCompleteAttempt(userId, taskId, selectedOptionIds, textAnswer);
+        } catch (IllegalArgumentException exception) {
+            if (exception.getMessage() != null && exception.getMessage().endsWith("не найдено")) {
+                throw new NotFoundResponse(exception.getMessage());
+            }
+            throw new BadRequestResponse(exception.getMessage());
+        }
+        boolean isSuccess = attempt.getEarnedPoints() > 0;
+
+        ctx.json(new TaskAttemptResponseDto(isSuccess));
+    }
+
+    private UUID parseTaskId(Context ctx) {
+        try {
+            return UUID.fromString(ctx.pathParam("taskId"));
+        } catch (IllegalArgumentException exception) {
+            throw new BadRequestResponse("Invalid taskId");
+        }
+    }
 }

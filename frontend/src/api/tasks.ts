@@ -1,5 +1,3 @@
-import { TEST_TASKS_EXAMPLE, MISTAKES_TASKS_EXAMPLE, OPEN_TASKS_EXAMPLE } from './examples'
-
 export type TaskType = 'test' | 'mistakes' | 'open'
 
 export type TestTask = {
@@ -50,12 +48,11 @@ export type Tasks = TestTask[] | OpenTask[] | MistakesTask[]
 
 /** GET /tasks?type={test|mistakes|open} */
 export async function getTasks(type: TaskType): Promise<Tasks> {
-  switch (type) {
-    case 'test':
-      return TEST_TASKS_EXAMPLE
-    case 'mistakes':
-      return MISTAKES_TASKS_EXAMPLE
-    case 'open':
-      return OPEN_TASKS_EXAMPLE
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tasks?type=${type}`, {
+    credentials: 'include',
+  })
+  if (response.status === 401) {
+    window.location.href = '/login'
   }
+  return await response.json()
 }
