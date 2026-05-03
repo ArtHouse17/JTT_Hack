@@ -53,6 +53,25 @@ public class UserHandler {
         ctx.json(new MessageResponse("Прогресс успешно сброшен"));
     }
 
+    public void getUserById(Context ctx) {
+        UUID userId = UUID.fromString(ctx.pathParam("id"));
+        User user = userService.getCurrentUser(userId);
+
+        ctx.json(new UserProfileResponse(
+                user.getId().toString(),
+                user.getUsername(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getGradeLevel() != null ? user.getGradeLevel().name() : null
+        ));
+    }
+
+    public void updateUser(Context ctx) {
+        UUID userId = UUID.fromString(ctx.pathParam("id"));
+        // TODO: Реализовать обновление пользователя
+        ctx.status(501).json(new MessageResponse("Метод обновления пользователя пока не реализован"));
+    }
+
     public record UserProfileResponse(String id, String username, String firstname, String lastname, String gradeLevel) {}
 
     public record MessageResponse(String message) {}
