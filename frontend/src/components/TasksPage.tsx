@@ -37,7 +37,7 @@ export function TasksPage() {
       </div>
 
       {filteredTasks && (
-        <div className="my-6 flex flex-col gap-6">
+        <div className="my-6 flex flex-col gap-6 divide-y divide-gray-200">
           {filteredTasks.map((task) => {
             switch (task.type) {
               case 'test':

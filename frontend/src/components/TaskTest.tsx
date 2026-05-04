@@ -41,7 +41,7 @@ export function TaskTest({ task }: { task: TestTask }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="pb-6">
       <div className="mb-2 flex items-center gap-2 text-[11px]">
         <Text color="secondary">{formatPoints(task.points)}</Text>
         <span className="text-gray-400">•</span>
