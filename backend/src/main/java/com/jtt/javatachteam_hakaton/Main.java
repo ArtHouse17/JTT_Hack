@@ -10,6 +10,7 @@ import com.jtt.javatachteam_hakaton.config.DataSourceFactory;
 import com.jtt.javatachteam_hakaton.config.EntityManagerFactoryProvider;
 import com.jtt.javatachteam_hakaton.config.LiquibaseMigrator;
 import com.jtt.javatachteam_hakaton.repository.*;
+import com.jtt.javatachteam_hakaton.security.AuthMiddleware;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import com.jtt.javatachteam_hakaton.service.AuthService;
 import com.jtt.javatachteam_hakaton.service.TaskService;
@@ -49,9 +50,10 @@ public final class Main {
 
         // --- Настройка Javalin и Роутинга ---
         Javalin app = Javalin.create(javalinConfig -> {
-            // Пробрасываем userHandler в ApiRouter
             ApiRouter.register(javalinConfig, authHandler, taskHandler, healthHandler, userHandler);
         });
+
+        app.before(AuthMiddleware::handle);
 
         // --- Graceful Shutdown ---
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
