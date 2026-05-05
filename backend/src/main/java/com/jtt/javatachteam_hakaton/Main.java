@@ -50,10 +50,11 @@ public final class Main {
 
         // --- Настройка Javalin и Роутинга ---
         Javalin app = Javalin.create(javalinConfig -> {
+            javalinConfig.http.defaultContentType = "application/json";
+            javalinConfig.http.prefer405over404 = true;
             ApiRouter.register(javalinConfig, authHandler, taskHandler, healthHandler, userHandler);
         });
 
-        app.before(AuthMiddleware::handle);
 
         // --- Graceful Shutdown ---
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

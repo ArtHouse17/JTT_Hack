@@ -15,7 +15,7 @@ public class AuthMiddleware {
             "/health"
     ));
 
-    public static void handle(Context ctx) {
+    public static void checkAuthorization(Context ctx) {
         String path = ctx.path();
 
         if (isPublicPath(path)) {
