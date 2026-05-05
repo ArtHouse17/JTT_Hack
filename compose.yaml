@@ -35,18 +35,29 @@ services:
     restart: unless-stopped
     tty: true
     stdin_open: true
+    
   javalin-app:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: javalin-app
     ports:
-      - "7070:7070"
+      - "7070:7070"  # Маппинг порта
     restart: unless-stopped
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       JAVA_OPTS: "-Xms256m -Xmx512m"
+      # Ключевые изменения здесь:
+      DB_URL: jdbc:postgresql://postgres:5432/postgres  # postgres вместо localhost
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_DRIVER: org.postgresql.Driver
+      PORT: 7070  # 7070 вместо 8080
+      JWT_SECRET: JavaTachTeamHackathonSuperSecretKeyForJwt2026
+      LIQUIBASE_CHANGELOG: db/changelog/db.changelog-master.xml
+    
   vite:
     image: node:24-alpine
     container_name: vite
