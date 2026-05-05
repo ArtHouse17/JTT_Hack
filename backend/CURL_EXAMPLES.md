@@ -3,7 +3,7 @@
 ## Регистрация новогопользователя
 
 ```bash
-curl -X POST http://localhost:8080/auth/signup \
+curl http://localhost:7070/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -26,7 +26,7 @@ Set-Cookie: session_id=<uuid>; Max-Age=86400
 ## Вход в систему
 
 ```bash
-curl -X POST http://localhost:8080/auth/login \
+curl -X POST http://localhost:7070/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -48,7 +48,7 @@ Set-Cookie: session_id=<uuid>; Max-Age=86400
 ## Сохранение cookie и использование для следующих запросов
 
 ```bash
-curl -X POST http://localhost:8080/auth/login \
+curl -X POST http://localhost:7070/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -60,7 +60,7 @@ curl -X POST http://localhost:8080/auth/login \
 ## Доступ к защищенному ресурсу с cookie
 
 ```bash
-curl -X GET http://localhost:8080/api/tasks \
+curl -X GET http://localhost:7070/users/me \
   -b cookies.txt \
   -v
 ```
@@ -71,7 +71,7 @@ curl -X GET http://localhost:8080/api/tasks \
 ## Выход из системы
 
 ```bash
-curl -X POST http://localhost:8080/auth/logout \
+curl -X POST http://localhost:7070/auth/logout \
   -b cookies.txt \
   -v
 ```
@@ -88,7 +88,7 @@ Set-Cookie: session_id=; Max-Age=0
 ## Попытка доступа к защищенному ресурсу без авторизации
 
 ```bash
-curl -X GET http://localhost:8080/api/tasks \
+curl -X GET http://localhost:7070/users/me \
   -v
 ```
 
@@ -99,72 +99,3 @@ HTTP/1.1 401
   "message": "Требуется авторизация"
 }
 ```
-
-## Одна команда для полного цикла
-
-```bash
-# 1. Регистрация
-curl -X POST http://localhost:8080/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "fullcycleuser",
-    "password": "password123",
-    "firstname": "Полный",
-    "lastname": "Цикл"
-  }' \
-  -c cookies.txt
-
-# 2. Доступ к защищенному ресурсу
-curl -X GET http://localhost:8080/api/tasks \
-  -b cookies.txt
-
-# 3. Выход
-curl -X POST http://localhost:8080/auth/logout \
-  -b cookies.txt
-```
-
-## Тестирование с Postman
-
-1. Откройте Postman
-2. Создайте POST запрос на `http://localhost:8080/auth/signup`
-3. В вкладке "Body" выберите "raw" и "JSON"
-4. Введите JSON:
-```json
-{
-  "username": "postmanuser",
-  "password": "password123",
-  "firstname": "Постман",
-  "lastname": "Юзер"
-}
-```
-5. Нажмите "Send"
-6. В ответе должна быть установлена cookie `session_id`
-7. Postman автоматически сохранит cookie
-8. Все последующие запросы будут использовать сохраненную cookie
-
-## Ошибки и их значения
-
-### Ошибка при регистрации: пользователь уже существует
-```json
-{
-  "message": "Пользователь с таким именем уже существует"
-}
-```
-HTTP Status: 400
-
-### Ошибка при входе: неверные учетные данные
-```json
-{
-  "message": "Неверное имя пользователя или пароль"
-}
-```
-HTTP Status: 401
-
-### Ошибка: требуется авторизация
-```json
-{
-  "message": "Требуется авторизация"
-}
-```
-HTTP Status: 401
-

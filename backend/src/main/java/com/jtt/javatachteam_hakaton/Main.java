@@ -55,7 +55,6 @@ public final class Main {
             ApiRouter.register(javalinConfig, authHandler, taskHandler, healthHandler, userHandler);
         });
 
-
         // --- Graceful Shutdown ---
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             app.stop();
