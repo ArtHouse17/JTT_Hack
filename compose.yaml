@@ -51,6 +51,8 @@ services:
     image: node:24-alpine
     container_name: vite
     working_dir: /app
+    environment:
+      VITE_BACKEND_URL: "http://localhost:7070"
     volumes:
       - ./frontend:/app
     ports:

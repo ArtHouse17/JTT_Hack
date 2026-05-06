@@ -48,8 +48,16 @@ public final class Main {
         UserHandler userHandler = new UserHandler(userService);
 
         // --- Настройка Javalin и Роутинга ---
-        Javalin app = Javalin.create(javalinConfig -> {
-            // Пробрасываем userHandler в ApiRouter
+          Javalin app = Javalin.create(javalinConfig -> {
+            javalinConfig.bundledPlugins.enableCors(cors -> {
+                cors.addRule(it -> {
+                    it.allowHost(
+                        "http://localhost:5173",
+                        "http://localhost:4173"
+                    );
+                    it.allowCredentials = true;
+                });
+            }); 
             ApiRouter.register(javalinConfig, authHandler, taskHandler, healthHandler, userHandler);
         });
 

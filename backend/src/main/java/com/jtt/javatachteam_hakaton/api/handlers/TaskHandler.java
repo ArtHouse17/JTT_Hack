@@ -1,8 +1,8 @@
 package com.jtt.javatachteam_hakaton.api.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jtt.javatachteam_hakaton.api.AuthUtils;
 import com.jtt.javatachteam_hakaton.api.dto.TaskAttemptResponseDto;
-import com.jtt.javatachteam_hakaton.config.JwtProvider;
 import com.jtt.javatachteam_hakaton.entity.Attempt;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import com.jtt.javatachteam_hakaton.service.TaskService;
@@ -27,7 +27,7 @@ public class TaskHandler {
 
     public void tasks(Context ctx) {
         String type = ctx.queryParam("type");
-        UUID userId = getUserIdFromToken(ctx, false).orElse(null);
+        UUID userId = AuthUtils.extractUserId(ctx).orElse(null);
 
         try {
             ctx.json(taskService.getTasksByType(type, userId));
@@ -38,7 +38,7 @@ public class TaskHandler {
 
     public void taskById(Context ctx) {
         UUID taskId = parseTaskId(ctx);
-        UUID userId = getUserIdFromToken(ctx, false).orElse(null);
+        UUID userId = AuthUtils.extractUserId(ctx).orElse(null);
 
         try {
             ctx.json(taskService.getTaskById(taskId, userId));
@@ -49,8 +49,7 @@ public class TaskHandler {
 
     public void submitTaskAttempt(Context ctx) {
         UUID taskId = parseTaskId(ctx);
-        UUID userId = getUserIdFromToken(ctx, true)
-            .orElseThrow(() -> new UnauthorizedResponse("Необходима авторизация"));
+        UUID userId = AuthUtils.requireUserId(ctx);
 
         JsonNode payload = ctx.bodyAsClass(JsonNode.class);
         JsonNode answerNode = payload.get("answer");
@@ -93,25 +92,6 @@ public class TaskHandler {
             return UUID.fromString(ctx.pathParam("taskId"));
         } catch (IllegalArgumentException exception) {
             throw new BadRequestResponse("Invalid taskId");
-        }
-    }
-
-    private Optional<UUID> getUserIdFromToken(Context ctx, boolean required) {
-        String authHeader = ctx.header("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            if (required) {
-                throw new UnauthorizedResponse("Необходима авторизация");
-            }
-            return Optional.empty();
-        }
-
-        try {
-            return Optional.of(JwtProvider.extractUserId(authHeader.substring(7)));
-        } catch (Exception exception) {
-            if (required) {
-                throw new UnauthorizedResponse("Невалидный или просроченный токен");
-            }
-            return Optional.empty();
         }
     }
 }
