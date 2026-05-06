@@ -11,7 +11,7 @@ public record AppConfig(
 ) {
     public static AppConfig fromEnvironment() {
         return new AppConfig(
-                read("DB_URL", "jdbc:postgresql://localhost:5432/postgres"),
+                read("DB_URL", "jdbc:postgresql://postgres:5432/postgres"),
                 read("DB_USER", "user"),
                 read("DB_PASSWORD", "password"),
                 read("DB_DRIVER", "org.postgresql.Driver"),
