@@ -4,7 +4,9 @@ import com.jtt.javatachteam_hakaton.api.dto.ProgressDto;
 import com.jtt.javatachteam_hakaton.entity.Attempt;
 import com.jtt.javatachteam_hakaton.entity.User;
 import com.jtt.javatachteam_hakaton.entity.enums.StatusEnum;
+import com.jtt.javatachteam_hakaton.entity.enums.TaskTypeEnum;
 import com.jtt.javatachteam_hakaton.repository.AttemptRepository;
+import com.jtt.javatachteam_hakaton.repository.TaskRepository;
 import com.jtt.javatachteam_hakaton.repository.UserRepository;
 
 import java.util.List;
@@ -13,11 +15,12 @@ import java.util.UUID;
 public class UserService {
 	private final UserRepository userRepository;
 	private final AttemptRepository attemptRepository;
-	// TODO: В будущем сюда можно добавить остальные репозитории,
+	private final TaskRepository taskRepository;
 
-	public UserService(UserRepository userRepository, AttemptRepository attemptRepository) {
+	public UserService(UserRepository userRepository, AttemptRepository attemptRepository, TaskRepository taskRepository) {
 		this.userRepository = userRepository;
 		this.attemptRepository = attemptRepository;
+		this.taskRepository = taskRepository;
 	}
 
 	public User getCurrentUser(UUID userId) {
@@ -34,34 +37,48 @@ public class UserService {
 		int openTasksSolved = 0;
 
 		for (Attempt attempt : attempts) {
-			if (attempt.getStatus() == StatusEnum.COMPLETED) {
-				pointsEarned += attempt.getEarnedPoints() != null ? attempt.getEarnedPoints() : 0;
+			if (attempt.getStatus() == StatusEnum.COMPLETED && attempt.getEarnedPoints() != null && attempt.getEarnedPoints() > 0) {
+				pointsEarned += attempt.getEarnedPoints();
 
 				if (attempt.getTask() != null && attempt.getTask().getTaskType() != null) {
-					String taskType = attempt.getTask().getTaskType().name();
-
-					switch (taskType) {
-						case "TEST" -> testTasksSolved++;
-						case "MISTAKES" -> mistakesTasksSolved++;
-						case "OPEN" -> openTasksSolved++;
+					switch (attempt.getTask().getTaskType()) {
+						case TEST -> testTasksSolved++;
+						case ERROR_SEARCH -> mistakesTasksSolved++;
+						case OPEN -> openTasksSolved++;
 					}
 				}
 			}
 		}
 
+		int testTotal = (int) taskRepository.countByTaskType(TaskTypeEnum.TEST);
+		int mistakesTotal = (int) taskRepository.countByTaskType(TaskTypeEnum.ERROR_SEARCH);
+		int openTotal = (int) taskRepository.countByTaskType(TaskTypeEnum.OPEN);
+		int pointsTotal = taskRepository.sumMaxPointsByTaskType(TaskTypeEnum.TEST)
+				+ taskRepository.sumMaxPointsByTaskType(TaskTypeEnum.ERROR_SEARCH)
+				+ taskRepository.sumMaxPointsByTaskType(TaskTypeEnum.OPEN);
+
 		return new ProgressDto(
-				0,
+				pointsTotal,
 				pointsEarned,
-				0,
+				testTotal,
 				testTasksSolved,
-				0,
+				mistakesTotal,
 				mistakesTasksSolved,
-				0,
+				openTotal,
 				openTasksSolved
 		);
 	}
 
-	public void resetUserProgress(UUID userId) {
+	public ProgressDto resetUserProgress(UUID userId) {
 		attemptRepository.deleteByUserId(userId);
+
+		int testTotal = (int) taskRepository.countByTaskType(TaskTypeEnum.TEST);
+		int mistakesTotal = (int) taskRepository.countByTaskType(TaskTypeEnum.ERROR_SEARCH);
+		int openTotal = (int) taskRepository.countByTaskType(TaskTypeEnum.OPEN);
+		int pointsTotal = taskRepository.sumMaxPointsByTaskType(TaskTypeEnum.TEST)
+				+ taskRepository.sumMaxPointsByTaskType(TaskTypeEnum.ERROR_SEARCH)
+				+ taskRepository.sumMaxPointsByTaskType(TaskTypeEnum.OPEN);
+
+		return new ProgressDto(pointsTotal, 0, testTotal, 0, mistakesTotal, 0, openTotal, 0);
 	}
 }

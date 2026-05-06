@@ -21,7 +21,6 @@ public class AttemptService {
 	private final TaskRepository taskRepository;
 	private final UserRepository userRepository;
 	private final TaskOptionRepository taskOptionRepository;
-
 	public AttemptService(AttemptRepository attemptRepository,
 	                      AttemptAnswerRepository attemptAnswerRepository,
 	                      TaskRepository taskRepository,

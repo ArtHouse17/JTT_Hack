@@ -4,6 +4,7 @@ import com.jtt.javatachteam_hakaton.api.AuthUtils;
 import com.jtt.javatachteam_hakaton.entity.User;
 import com.jtt.javatachteam_hakaton.service.UserService;
 import io.javalin.http.Context;
+import io.javalin.http.UnauthorizedResponse;
 
 import java.util.UUID;
 
@@ -16,7 +17,12 @@ public class UserHandler {
 
     public void currentUser(Context ctx) {
         UUID userId = AuthUtils.requireUserId(ctx);
-        User user = userService.getCurrentUser(userId);
+        User user;
+        try {
+            user = userService.getCurrentUser(userId);
+        } catch (IllegalArgumentException e) {
+            throw new UnauthorizedResponse("Токен недействителен");
+        }
 
         ctx.json(new UserProfileResponse(
                 user.getId().toString(),
@@ -34,13 +40,8 @@ public class UserHandler {
 
     public void resetCurrentUserProgress(Context ctx) {
         UUID userId = AuthUtils.requireUserId(ctx);
-
-        userService.resetUserProgress(userId);
-
-        ctx.json(new MessageResponse("Прогресс успешно сброшен"));
+        ctx.json(userService.resetUserProgress(userId));
     }
 
     public record UserProfileResponse(String id, String username, String firstname, String lastname, String gradeLevel) {}
-
-    public record MessageResponse(String message) {}
 }

@@ -70,6 +70,31 @@ public class TaskRepository {
         }
     }
 
+    public long countByTaskType(TaskTypeEnum taskType) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            return entityManager
+                .createQuery("select count(t) from Task t where t.taskType = :taskType", Long.class)
+                .setParameter("taskType", taskType)
+                .getSingleResult();
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    public int sumMaxPointsByTaskType(TaskTypeEnum taskType) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            Long result = entityManager
+                .createQuery("select coalesce(sum(t.maxPoints), 0) from Task t where t.taskType = :taskType", Long.class)
+                .setParameter("taskType", taskType)
+                .getSingleResult();
+            return result == null ? 0 : result.intValue();
+        } finally {
+            entityManager.close();
+        }
+    }
+
     public long count() {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {

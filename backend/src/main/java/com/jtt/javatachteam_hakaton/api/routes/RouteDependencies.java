@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 
 final class RouteDependencies {
     private static EntityManagerFactory EMF;
+    private static DataSource DATA_SOURCE;
 
     private static AttemptService ATTEMPT_SERVICE;
     private static AuthService AUTH_SERVICE;
@@ -20,13 +21,18 @@ final class RouteDependencies {
 
     private RouteDependencies() {}
 
+    private static DataSource getDataSource() {
+        if (DATA_SOURCE == null) {
+            AppConfig config = AppConfig.fromEnvironment();
+            DATA_SOURCE = DataSourceFactory.create(config);
+        }
+        return DATA_SOURCE;
+    }
+
     // Ленивая инициализация базы данных
     private static EntityManagerFactory getEmf() {
         if (EMF == null) {
-            AppConfig config = AppConfig.fromEnvironment();
-            DataSource dataSource = DataSourceFactory.create(config);
-
-            EMF = EntityManagerFactoryProvider.create(dataSource);
+            EMF = EntityManagerFactoryProvider.create(getDataSource());
         }
         return EMF;
     }
