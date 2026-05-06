@@ -61,7 +61,7 @@ services:
     container_name: vite
     working_dir: /app
     environment:
-      VITE_BACKEND_URL: "http://javalin:7070"
+      VITE_BACKEND_URL: "http://localhost:7070"
     volumes:
       - ./frontend:/app
     ports:
