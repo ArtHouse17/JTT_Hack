@@ -2,21 +2,24 @@ package com.jtt.javatachteam_hakaton.api.handlers;
 
 import com.jtt.javatachteam_hakaton.service.AuthService;
 import io.javalin.http.Context;
+import io.javalin.http.Cookie;
 
 public class AuthHandler {
     private final AuthService authService;
+    private static final String TOKEN_COOKIE = "auth_token";
+    private static final int COOKIE_MAX_AGE = 86400;
 
     public AuthHandler(AuthService authService) {
         this.authService = authService;
     }
 
     public void login(Context ctx) {
-        // Парсим тело запроса
         LoginRequest req = ctx.bodyAsClass(LoginRequest.class);
 
         String token = authService.login(req.username(), req.password());
 
         if (token != null) {
+            setAuthCookie(ctx, token);
             ctx.status(200).json(new AuthResponse(token));
         } else {
             ctx.status(401).json(new ErrorResponse("Неверное имя пользователя или пароль"));
@@ -28,6 +31,7 @@ public class AuthHandler {
 
         try {
             String token = authService.signup(req.username(), req.password(), req.firstname(), req.lastname());
+            setAuthCookie(ctx, token);
             ctx.status(201).json(new AuthResponse(token));
         } catch (IllegalArgumentException e) {
             ctx.status(400).json(new ErrorResponse(e.getMessage()));
@@ -35,8 +39,17 @@ public class AuthHandler {
     }
 
     public void logout(Context ctx) {
-        // Обрабатываем на фронте
+        ctx.removeCookie(TOKEN_COOKIE, "/");
         ctx.json(new ErrorResponse("Успешный выход"));
+    }
+
+    private void setAuthCookie(Context ctx, String token) {
+        Cookie cookie = new Cookie(TOKEN_COOKIE, token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setMaxAge(COOKIE_MAX_AGE);
+        cookie.setPath("/");
+        ctx.cookie(cookie);
     }
 
     // --- Внутренние DTO для автоматического парсинга JSON ---

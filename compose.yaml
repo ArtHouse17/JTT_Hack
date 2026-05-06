@@ -35,6 +35,7 @@ services:
     restart: unless-stopped
     tty: true
     stdin_open: true
+
   javalin-app:
     build:
       context: ./backend
@@ -44,13 +45,23 @@ services:
       - "7070:7070"
     restart: unless-stopped
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       JAVA_OPTS: "-Xms256m -Xmx512m"
+      DB_URL: "jdbc:postgresql://postgres:5432/postgres"
+      DB_USER: "user"
+      DB_PASSWORD: "password"
+      DB_DRIVER: "org.postgresql.Driver"
+      PORT: "7070"
+      JWT_SECRET: "JavaTachTeamHackathonSuperSecretKeyForJwt2026"
+
   vite:
     image: node:24-alpine
     container_name: vite
     working_dir: /app
+    environment:
+      VITE_BACKEND_URL: "http://localhost:7070"
     volumes:
       - ./frontend:/app
     ports:
