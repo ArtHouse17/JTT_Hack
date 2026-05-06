@@ -86,7 +86,7 @@ public class TaskRepository {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             Long result = entityManager
-                .createQuery("select coalesce(sum(t.maxPoints), 0) from Task t where t.taskType = :taskType", Long.class)
+                .createQuery("select sum(t.maxPoints) from Task t where t.taskType = :taskType", Long.class)
                 .setParameter("taskType", taskType)
                 .getSingleResult();
             return result == null ? 0 : result.intValue();
