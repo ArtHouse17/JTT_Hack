@@ -29,6 +29,12 @@ public class TaskService {
     }
 
     public List<Object> getTasksByType(String apiType, UUID userId) {
+        if (apiType == null || apiType.isBlank()) {
+            return taskRepository.findAll().stream()
+                .sorted(java.util.Comparator.comparing(com.jtt.javatachteam_hakaton.entity.Task::getTitle))
+                .map(task -> toDto(task, userId))
+                .toList();
+        }
         TaskTypeEnum taskType = fromApiType(apiType);
         return taskRepository.findByTaskType(taskType).stream()
             .map(task -> toDto(task, userId))
@@ -42,10 +48,6 @@ public class TaskService {
     }
 
     public static TaskTypeEnum fromApiType(String apiType) {
-        if (apiType == null || apiType.isBlank()) {
-            throw new IllegalArgumentException("Query parameter 'type' is required");
-        }
-
         return switch (apiType) {
             case "test" -> TaskTypeEnum.TEST;
             case "mistakes" -> TaskTypeEnum.ERROR_SEARCH;

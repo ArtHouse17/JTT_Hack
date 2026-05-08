@@ -15,7 +15,11 @@ import com.jtt.javatachteam_hakaton.service.AuthService;
 import com.jtt.javatachteam_hakaton.service.TaskService;
 import com.jtt.javatachteam_hakaton.service.UserService;
 import io.javalin.Javalin;
+import io.javalin.http.HttpResponseException;
 import jakarta.persistence.EntityManagerFactory;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
@@ -39,13 +43,15 @@ public final class Main {
                 attemptAnswerRepository, taskRepository, userRepository, taskOptionRepository);
         TaskService taskService = new TaskService(taskRepository, taskOptionRepository, attemptRepository);
         AuthService authService = new AuthService(userRepository);
-        UserService userService = new UserService(userRepository, attemptRepository);
+        UserService userService = new UserService(userRepository, attemptRepository, taskRepository);
 
         // --- Инициализация Контроллеров (Handlers) ---
         TaskHandler taskHandler = new TaskHandler(taskService, attemptService);
         AuthHandler authHandler = new AuthHandler(authService);
         HealthHandler healthHandler = new HealthHandler();
         UserHandler userHandler = new UserHandler(userService);
+
+        Logger appLogger = Logger.getLogger("com.jtt");
 
         // --- Настройка Javalin и Роутинга ---
           Javalin app = Javalin.create(javalinConfig -> {
@@ -57,7 +63,17 @@ public final class Main {
                     );
                     it.allowCredentials = true;
                 });
-            }); 
+            });
+            javalinConfig.router.handlerWrapper(endpoint -> ctx -> {
+                try {
+                    endpoint.handler.handle(ctx);
+                } catch (HttpResponseException e) {
+                    throw e;
+                } catch (Exception e) {
+                    appLogger.log(Level.SEVERE, "Unhandled exception in " + endpoint.path, e);
+                    ctx.status(500).json(Map.of("message", "Внутренняя ошибка сервера"));
+                }
+            });
             ApiRouter.register(javalinConfig, authHandler, taskHandler, healthHandler, userHandler);
         });
 

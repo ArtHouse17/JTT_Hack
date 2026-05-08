@@ -52,7 +52,7 @@ export function ProgressPage() {
       <div className="mt-4 grid grid-cols-2 gap-2">
         <ul className="mt-12 leading-6">
           <li>
-            Решено заданий: {tasksTotal}/{tasksSolved} (
+            Решено заданий: {tasksSolved}/{tasksTotal} (
             {calculatePercentage(tasksSolved, tasksTotal)}
             %)
           </li>

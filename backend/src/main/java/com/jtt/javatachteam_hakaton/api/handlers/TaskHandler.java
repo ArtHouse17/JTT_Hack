@@ -26,8 +26,8 @@ public class TaskHandler {
     }
 
     public void tasks(Context ctx) {
+        UUID userId = AuthUtils.requireUserId(ctx);
         String type = ctx.queryParam("type");
-        UUID userId = AuthUtils.extractUserId(ctx).orElse(null);
 
         try {
             ctx.json(taskService.getTasksByType(type, userId));
