@@ -10,7 +10,10 @@ import { useQuery } from '@tanstack/react-query'
 export function App() {
   const navigate = useNavigate()
 
-  const { data: userInfo } = useQuery({ queryKey: ['userInfo'], queryFn: getUserInfo })
+  const { data: userInfo } = useQuery({
+    queryKey: ['userInfo'],
+    queryFn: getUserInfo,
+  })
 
   if (!userInfo) return null
 
@@ -32,16 +35,16 @@ export function App() {
           <DropdownMenu
             items={[
               {
-                action: () => {
-                  resetProgress()
+                action: async () => {
+                  await resetProgress()
                   window.location.reload()
                 },
                 iconStart: <Icon data={ArrowRotateRight} />,
                 text: <Text>Сбросить прогресс</Text>,
               },
               {
-                action: () => {
-                  logout()
+                action: async () => {
+                  await logout()
                   navigate('/login')
                 },
                 iconStart: <Icon data={ArrowRightFromSquare} color="danger" />,

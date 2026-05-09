@@ -1,6 +1,6 @@
 import { Check, Xmark } from '@gravity-ui/icons'
 import { Button, Icon, Label, Text, TextArea } from '@gravity-ui/uikit'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import type { TaskAttemptRequest, TaskAttemptResponse } from '../api/attempts'
 import { postTaskAttempt } from '../api/attempts'
@@ -12,6 +12,7 @@ export function TaskMistakes({ task }: { task: MistakesTask }) {
   const [showResult, setShowResult] = useState<boolean>(false)
   const [solved, setSolved] = useState(task.solved)
   const [prevAnswer, setPrevAnswer] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
   const mutation = useMutation<TaskAttemptResponse, Error, TaskAttemptRequest>({
     mutationFn: (data) => postTaskAttempt(task.id, data),
@@ -19,6 +20,7 @@ export function TaskMistakes({ task }: { task: MistakesTask }) {
       setShowResult(true)
       if (data.correct) {
         setSolved(true)
+        queryClient.invalidateQueries({ queryKey: ['tasks'] })
       }
     },
   })
