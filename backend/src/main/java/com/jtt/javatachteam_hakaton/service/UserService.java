@@ -9,7 +9,9 @@ import com.jtt.javatachteam_hakaton.repository.AttemptRepository;
 import com.jtt.javatachteam_hakaton.repository.TaskRepository;
 import com.jtt.javatachteam_hakaton.repository.UserRepository;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class UserService {
@@ -36,15 +38,33 @@ public class UserService {
 		int mistakesTasksSolved = 0;
 		int openTasksSolved = 0;
 
+		Set<UUID> solvedTestTasks = new HashSet<>();
+		Set<UUID> solvedMistakesTasks = new HashSet<>();
+		Set<UUID> solvedOpenTasks = new HashSet<>();
+
 		for (Attempt attempt : attempts) {
 			if (attempt.getStatus() == StatusEnum.COMPLETED && attempt.getEarnedPoints() != null && attempt.getEarnedPoints() > 0) {
-				pointsEarned += attempt.getEarnedPoints();
-
 				if (attempt.getTask() != null && attempt.getTask().getTaskType() != null) {
+					UUID taskId = attempt.getTask().getId();
 					switch (attempt.getTask().getTaskType()) {
-						case TEST -> testTasksSolved++;
-						case ERROR_SEARCH -> mistakesTasksSolved++;
-						case OPEN -> openTasksSolved++;
+						case TEST -> {
+							if (solvedTestTasks.add(taskId)) {
+								pointsEarned += attempt.getEarnedPoints();
+								testTasksSolved++;
+							}
+						}
+						case ERROR_SEARCH -> {
+							if (solvedMistakesTasks.add(taskId)) {
+								pointsEarned += attempt.getEarnedPoints();
+								mistakesTasksSolved++;
+							}
+						}
+						case OPEN -> {
+							if (solvedOpenTasks.add(taskId)) {
+								pointsEarned += attempt.getEarnedPoints();
+								openTasksSolved++;
+							}
+						}
 					}
 				}
 			}
