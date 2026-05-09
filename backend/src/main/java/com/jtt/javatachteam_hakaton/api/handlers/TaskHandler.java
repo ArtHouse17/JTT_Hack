@@ -3,17 +3,14 @@ package com.jtt.javatachteam_hakaton.api.handlers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jtt.javatachteam_hakaton.api.AuthUtils;
 import com.jtt.javatachteam_hakaton.api.dto.TaskAttemptResponseDto;
-import com.jtt.javatachteam_hakaton.entity.Attempt;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import com.jtt.javatachteam_hakaton.service.TaskService;
+import com.jtt.javatachteam_hakaton.service.TaskAttemptSubmissionResult;
 import io.javalin.http.Context;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.NotFoundResponse;
-import io.javalin.http.UnauthorizedResponse;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public class TaskHandler {
@@ -73,18 +70,18 @@ public class TaskHandler {
             throw new BadRequestResponse("Поле 'answer' должно быть либо строкой, либо массивом строк.");
         }
 
-        Attempt attempt;
+        TaskAttemptSubmissionResult submissionResult;
         try {
-            attempt = attemptService.createAndCompleteAttempt(userId, taskId, selectedOptionIds, textAnswer);
+            submissionResult = attemptService.createAndCompleteAttempt(userId, taskId, selectedOptionIds, textAnswer);
         } catch (IllegalArgumentException exception) {
             if (exception.getMessage() != null && exception.getMessage().endsWith("не найдено")) {
                 throw new NotFoundResponse(exception.getMessage());
             }
             throw new BadRequestResponse(exception.getMessage());
         }
-        boolean isSuccess = attempt.getEarnedPoints() > 0;
+        boolean isSuccess = submissionResult.attempt().getEarnedPoints() > 0;
 
-        ctx.json(new TaskAttemptResponseDto(isSuccess));
+        ctx.json(new TaskAttemptResponseDto(isSuccess, submissionResult.errorCode(), submissionResult.errorMessage()));
     }
 
     private UUID parseTaskId(Context ctx) {

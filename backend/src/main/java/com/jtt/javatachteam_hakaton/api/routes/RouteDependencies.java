@@ -6,6 +6,7 @@ import com.jtt.javatachteam_hakaton.config.EntityManagerFactoryProvider;
 import com.jtt.javatachteam_hakaton.repository.*;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import com.jtt.javatachteam_hakaton.service.AuthService;
+import com.jtt.javatachteam_hakaton.service.SqlTaskEvaluationService;
 import com.jtt.javatachteam_hakaton.service.TaskService;
 import jakarta.persistence.EntityManagerFactory;
 
@@ -17,6 +18,7 @@ final class RouteDependencies {
 
     private static AttemptService ATTEMPT_SERVICE;
     private static AuthService AUTH_SERVICE;
+    private static SqlTaskEvaluationService SQL_TASK_EVALUATION_SERVICE;
     private static TaskService TASK_SERVICE;
 
     private RouteDependencies() {}
@@ -45,7 +47,8 @@ final class RouteDependencies {
                     new AttemptAnswerRepository(emf),
                     new TaskRepository(emf),
                     new UserRepository(emf),
-                    new TaskOptionRepository(emf)
+                    new TaskOptionRepository(emf),
+                    sqlTaskEvaluationService()
             );
         }
         return ATTEMPT_SERVICE;
@@ -57,7 +60,8 @@ final class RouteDependencies {
             TASK_SERVICE = new TaskService(
                     new TaskRepository(emf),
                     new TaskOptionRepository(emf),
-                    new AttemptRepository(emf)
+                    new AttemptRepository(emf),
+                    sqlTaskEvaluationService()
             );
         }
         return TASK_SERVICE;
@@ -68,5 +72,15 @@ final class RouteDependencies {
             AUTH_SERVICE = new AuthService(new UserRepository(getEmf()));
         }
         return AUTH_SERVICE;
+    }
+
+    static SqlTaskEvaluationService sqlTaskEvaluationService() {
+        if (SQL_TASK_EVALUATION_SERVICE == null) {
+            SQL_TASK_EVALUATION_SERVICE = new SqlTaskEvaluationService(
+                getDataSource(),
+                new SqlTaskConfigRepository(getEmf())
+            );
+        }
+        return SQL_TASK_EVALUATION_SERVICE;
     }
 }

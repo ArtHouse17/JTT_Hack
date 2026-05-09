@@ -21,19 +21,22 @@ public class AttemptService {
 	private final TaskRepository taskRepository;
 	private final UserRepository userRepository;
 	private final TaskOptionRepository taskOptionRepository;
+	private final SqlTaskEvaluationService sqlTaskEvaluationService;
 	public AttemptService(AttemptRepository attemptRepository,
 	                      AttemptAnswerRepository attemptAnswerRepository,
 	                      TaskRepository taskRepository,
 	                      UserRepository userRepository,
-	                      TaskOptionRepository taskOptionRepository) {
+	                      TaskOptionRepository taskOptionRepository,
+	                      SqlTaskEvaluationService sqlTaskEvaluationService) {
 		this.attemptRepository = attemptRepository;
 		this.attemptAnswerRepository = attemptAnswerRepository;
 		this.taskRepository = taskRepository;
 		this.userRepository = userRepository;
 		this.taskOptionRepository = taskOptionRepository;
+		this.sqlTaskEvaluationService = sqlTaskEvaluationService;
 	}
 
-	public Attempt createAndCompleteAttempt(UUID userId, UUID taskId, List<UUID> selectedOptionIds, String textAnswer) {
+	public TaskAttemptSubmissionResult createAndCompleteAttempt(UUID userId, UUID taskId, List<UUID> selectedOptionIds, String textAnswer) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
 		Task task = taskRepository.findById(taskId)
@@ -49,6 +52,8 @@ public class AttemptService {
 		attempt.setCompletedAt(Instant.now());
 
 		int earnedPoints = 0;
+		String errorCode = null;
+		String errorMessage = null;
 
 		if (task.getTaskType() == TaskTypeEnum.TEST) {
 			earnedPoints = calculateTestPoints(task, taskOptions, selectedOptionIds);
@@ -59,7 +64,10 @@ public class AttemptService {
 
 		} else if (task.getTaskType() == TaskTypeEnum.OPEN) {
 			attempt.setWrittenText(textAnswer);
-			earnedPoints = calculateTextMatchPoints(task, taskOptions, textAnswer);
+			SqlTaskEvaluationResult evaluationResult = sqlTaskEvaluationService.evaluate(task.getId(), textAnswer);
+			earnedPoints = evaluationResult.correct() ? task.getMaxPoints() : 0;
+			errorCode = evaluationResult.errorCode();
+			errorMessage = evaluationResult.errorMessage();
 		}
 
 		attempt.setEarnedPoints(earnedPoints);
@@ -69,7 +77,7 @@ public class AttemptService {
 			saveAttemptAnswers(savedAttempt, taskOptions, selectedOptionIds);
 		}
 
-		return savedAttempt;
+		return new TaskAttemptSubmissionResult(savedAttempt, errorCode, errorMessage);
 	}
 
 	private void validateAnswerFormat(TaskTypeEnum taskType, List<UUID> selectedOptionIds, String textAnswer) {

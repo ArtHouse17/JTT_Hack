@@ -10,6 +10,10 @@ export type TaskAttemptRequest = {
 export type TaskAttemptResponse = {
   /** Правильный ответ или нет */
   correct: boolean
+  /** Код SQL-ошибки, если запрос не выполнился */
+  errorCode?: string | null
+  /** Короткий текст SQL-ошибки для пользователя */
+  errorMessage?: string | null
 }
 
 /** POST /tasks/{taskId}/attempts */

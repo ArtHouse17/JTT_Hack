@@ -19,13 +19,16 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final TaskOptionRepository taskOptionRepository;
     private final AttemptRepository attemptRepository;
+    private final SqlTaskEvaluationService sqlTaskEvaluationService;
 
     public TaskService(TaskRepository taskRepository,
                        TaskOptionRepository taskOptionRepository,
-                       AttemptRepository attemptRepository) {
+                       AttemptRepository attemptRepository,
+                       SqlTaskEvaluationService sqlTaskEvaluationService) {
         this.taskRepository = taskRepository;
         this.taskOptionRepository = taskOptionRepository;
         this.attemptRepository = attemptRepository;
+        this.sqlTaskEvaluationService = sqlTaskEvaluationService;
     }
 
     public List<Object> getTasksByType(String apiType, UUID userId) {
@@ -97,14 +100,15 @@ public class TaskService {
     }
 
     private String latestWrittenText(UUID userId, UUID taskId) {
+        String starterSql = sqlTaskEvaluationService.getStarterSql(taskId);
         if (userId == null) {
-            return "";
+            return starterSql;
         }
 
         return attemptRepository.findLatestByUserIdAndTaskId(userId, taskId)
             .map(Attempt::getWrittenText)
             .filter(text -> text != null && !text.isBlank())
-            .orElse("");
+            .orElse(starterSql);
     }
 
     private boolean isMultiple(Task task, List<TaskOption> options) {
