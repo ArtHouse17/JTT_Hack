@@ -14,15 +14,13 @@ public class AuthHandler {
     }
 
     public void login(Context ctx) {
-        LoginRequest req = ctx.bodyAsClass(LoginRequest.class);
-
-        String token = authService.login(req.username(), req.password());
-
-        if (token != null) {
+        try {
+            LoginRequest req = ctx.bodyAsClass(LoginRequest.class);
+            String token = authService.login(req.username(), req.password());
             setAuthCookie(ctx, token);
             ctx.status(200).json(new AuthResponse(token));
-        } else {
-            ctx.status(401).json(new ErrorResponse("Неверное имя пользователя или пароль"));
+        } catch (IllegalArgumentException e) {
+            ctx.status(401).json(new ErrorResponse(e.getMessage()));
         }
     }
 

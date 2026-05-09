@@ -17,39 +17,51 @@ public class AuthService {
 	}
 
 	public String login(String username, String rawPassword) {
-		Optional<User> userOpt = userRepository.findByUsername(username);
+		String trimmedUsername = username == null ? "" : username.trim();
+		String trimmedPassword = rawPassword == null ? "" : rawPassword.trim();
+
+		if (trimmedUsername.isEmpty() || trimmedPassword.isEmpty()) {
+			throw new IllegalArgumentException("Логин и пароль обязательны");
+		}
+
+		Optional<User> userOpt = userRepository.findByUsername(trimmedUsername);
 
 		if (userOpt.isPresent()) {
 			User user = userOpt.get();
-			// Проверяем, совпадает ли введенный пароль с хешем из БД
-			if (BCrypt.checkpw(rawPassword, user.getPassHash())) {
-				// Если совпадает — генерируем токен
+			if (BCrypt.checkpw(trimmedPassword, user.getPassHash())) {
 				return JwtProvider.generateToken(user.getId());
 			}
 		}
-		// Возвращаем null, если логин или пароль неверны
-		return null;
+		throw new IllegalArgumentException("Неверный логин или пароль");
 	}
 
 	public String signup(String username, String rawPassword, String firstname, String lastname) {
-		// Проверяем, не занят ли логин
-		if (userRepository.findByUsername(username).isPresent()) {
-			throw new IllegalArgumentException("Пользователь с таким именем уже существует");
+		String trimmedUsername = username == null ? "" : username.trim();
+		String trimmedPassword = rawPassword == null ? "" : rawPassword.trim();
+
+		if (trimmedUsername.isEmpty() || trimmedPassword.isEmpty()) {
+			throw new IllegalArgumentException("Логин и пароль обязательны");
+		}
+
+		if (trimmedPassword.length() < 6) {
+			throw new IllegalArgumentException("Пароль должен содержать минимум 6 символов");
+		}
+
+		if (userRepository.findByUsername(trimmedUsername).isPresent()) {
+			throw new IllegalArgumentException("Пользователь с таким логином уже существует");
 		}
 
 		User user = new User();
-		user.setUsername(username);
+		user.setUsername(trimmedUsername);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
 		user.setRole("USER");
-		user.setGradeLevel(GradeEnum.Junior); // Грейд по умолчанию
+		user.setGradeLevel(GradeEnum.Junior);
 		user.setCreatedAt(Instant.now());
 
-		// Хешируем пароль перед сохранением в БД
-		String hashedPass = BCrypt.hashpw(rawPassword, BCrypt.gensalt());
+		String hashedPass = BCrypt.hashpw(trimmedPassword, BCrypt.gensalt());
 		user.setPassHash(hashedPass);
 
-		// Внимание: Убедись, что метод save в UserRepository открывает и закрывает транзакцию!
 		User savedUser = userRepository.save(user);
 
 		// Сразу авторизуем после регистрации

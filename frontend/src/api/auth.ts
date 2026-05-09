@@ -18,7 +18,8 @@ export async function login(credentials: LoginRequest): Promise<void> {
     body: JSON.stringify(credentials),
   })
   if (!response.ok) {
-    throw new Error('Ошибка при входе')
+    const errorMessage = (await response.json()).message
+    throw new Error(errorMessage)
   }
 }
 
@@ -32,7 +33,8 @@ export async function signup(credentials: SignupRequest): Promise<void> {
     body: JSON.stringify(credentials),
   })
   if (!response.ok) {
-    throw new Error('Ошибка при регистрации')
+    const errorMessage = (await response.json()).message
+    throw new Error(errorMessage)
   }
 }
 
