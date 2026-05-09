@@ -2,6 +2,7 @@ package com.jtt.javatachteam_hakaton.config;
 
 import com.jtt.javatachteam_hakaton.entity.Attempt;
 import com.jtt.javatachteam_hakaton.entity.AttemptAnswer;
+import com.jtt.javatachteam_hakaton.entity.SqlTaskConfig;
 import com.jtt.javatachteam_hakaton.entity.Task;
 import com.jtt.javatachteam_hakaton.entity.TaskOption;
 import com.jtt.javatachteam_hakaton.entity.User;
@@ -32,6 +33,7 @@ public final class EntityManagerFactoryProvider {
         configuration.addAnnotatedClass(TaskOption.class);
         configuration.addAnnotatedClass(Attempt.class);
         configuration.addAnnotatedClass(AttemptAnswer.class);
+        configuration.addAnnotatedClass(SqlTaskConfig.class);
 
         return configuration.buildSessionFactory();
     }

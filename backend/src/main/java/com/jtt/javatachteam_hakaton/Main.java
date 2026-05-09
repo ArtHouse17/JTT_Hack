@@ -12,6 +12,7 @@ import com.jtt.javatachteam_hakaton.config.LiquibaseMigrator;
 import com.jtt.javatachteam_hakaton.repository.*;
 import com.jtt.javatachteam_hakaton.service.AttemptService;
 import com.jtt.javatachteam_hakaton.service.AuthService;
+import com.jtt.javatachteam_hakaton.service.SqlTaskEvaluationService;
 import com.jtt.javatachteam_hakaton.service.TaskService;
 import com.jtt.javatachteam_hakaton.service.UserService;
 import io.javalin.Javalin;
@@ -37,11 +38,13 @@ public final class Main {
         TaskRepository taskRepository = new TaskRepository(entityManagerFactory);
         AttemptAnswerRepository attemptAnswerRepository = new AttemptAnswerRepository(entityManagerFactory);
         UserRepository userRepository = new UserRepository(entityManagerFactory);
+        SqlTaskConfigRepository sqlTaskConfigRepository = new SqlTaskConfigRepository(entityManagerFactory);
 
         // --- Инициализация Сервисов ---
+        SqlTaskEvaluationService sqlTaskEvaluationService = new SqlTaskEvaluationService(dataSource, sqlTaskConfigRepository);
         AttemptService attemptService = new AttemptService(attemptRepository,
-                attemptAnswerRepository, taskRepository, userRepository, taskOptionRepository);
-        TaskService taskService = new TaskService(taskRepository, taskOptionRepository, attemptRepository);
+                attemptAnswerRepository, taskRepository, userRepository, taskOptionRepository, sqlTaskEvaluationService);
+        TaskService taskService = new TaskService(taskRepository, taskOptionRepository, attemptRepository, sqlTaskEvaluationService);
         AuthService authService = new AuthService(userRepository);
         UserService userService = new UserService(userRepository, attemptRepository, taskRepository);
 

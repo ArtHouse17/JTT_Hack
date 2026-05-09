@@ -86,17 +86,32 @@ export function TaskOpen({ task }: { task: OpenTask }) {
         </Button>
 
         {mutation.isSuccess && showResult && (
-          <div className="flex items-center gap-1">
-            {mutation.data.correct ? (
-              <>
-                <Icon data={Check} color="positive" />
-                <Text color="positive">Правильно</Text>
-              </>
-            ) : (
-              <>
-                <Icon data={Xmark} color="danger" />
-                <Text color="danger">Неправильно</Text>
-              </>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              {mutation.data.correct ? (
+                <>
+                  <Icon data={Check} color="positive" />
+                  <Text color="positive">Правильно</Text>
+                </>
+              ) : (
+                <>
+                  <Icon data={Xmark} color="danger" />
+                  <Text color="danger">Неправильно</Text>
+                </>
+              )}
+            </div>
+
+            {!mutation.data.correct && mutation.data.errorMessage && (
+              <div className="rounded border border-red-200 bg-red-50 px-3 py-2">
+                <Text variant="body-1" color="danger">
+                  {mutation.data.errorMessage}
+                </Text>
+                {mutation.data.errorCode && (
+                  <Text variant="caption-2" color="secondary">
+                    Код ошибки: {mutation.data.errorCode}
+                  </Text>
+                )}
+              </div>
             )}
           </div>
         )}
