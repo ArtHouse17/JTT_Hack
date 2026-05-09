@@ -37,8 +37,8 @@ export function LoginPage() {
     try {
       await login({ username, password })
       navigate('/')
-    } catch {
-      alert('Ошибка входа')
+    } catch (error) {
+      alert(error)
     }
   }
 
@@ -47,8 +47,8 @@ export function LoginPage() {
     try {
       await signup({ username, password })
       navigate('/')
-    } catch {
-      alert('Ошибка регистрации')
+    } catch (error) {
+      alert(error)
     }
   }
 
@@ -79,29 +79,17 @@ export function LoginPage() {
 
         {formType === 'login' ? (
           <form onSubmit={handleLoginSubmit} className="flex flex-col gap-3">
-            <TextInput
-              placeholder="Логин"
-              value={username}
-              onChange={handleUsernameChange}
-            />
-            <PasswordInput
-              placeholder="Пароль"
-              value={password}
-              onChange={handlePasswordChange}
-            />
+            <TextInput placeholder="Логин" value={username} onChange={handleUsernameChange} />
+            <PasswordInput placeholder="Пароль" value={password} onChange={handlePasswordChange} />
             <Button type="submit" view="action" disabled={!isLoginFormValid}>
               Войти
             </Button>
           </form>
         ) : (
           <form onSubmit={handleSignupSubmit} className="flex flex-col gap-3">
-            <TextInput
-              placeholder="Логин"
-              value={username}
-              onChange={handleUsernameChange}
-            />
+            <TextInput placeholder="Логин" value={username} onChange={handleUsernameChange} />
             <PasswordInput
-              placeholder="Пароль"
+              placeholder="Пароль (6+ символов)"
               value={password}
               onChange={handlePasswordChange}
             />
