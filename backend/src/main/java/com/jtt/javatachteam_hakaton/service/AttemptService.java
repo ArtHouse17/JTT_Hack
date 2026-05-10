@@ -64,10 +64,14 @@ public class AttemptService {
 
 		} else if (task.getTaskType() == TaskTypeEnum.OPEN) {
 			attempt.setWrittenText(textAnswer);
-			SqlTaskEvaluationResult evaluationResult = sqlTaskEvaluationService.evaluate(task.getId(), textAnswer);
-			earnedPoints = evaluationResult.correct() ? task.getMaxPoints() : 0;
-			errorCode = evaluationResult.errorCode();
-			errorMessage = evaluationResult.errorMessage();
+			if (sqlTaskEvaluationService.isConfigured(task.getId())) {
+				SqlTaskEvaluationResult evaluationResult = sqlTaskEvaluationService.evaluate(task.getId(), textAnswer);
+				earnedPoints = evaluationResult.correct() ? task.getMaxPoints() : 0;
+				errorCode = evaluationResult.errorCode();
+				errorMessage = evaluationResult.errorMessage();
+			} else {
+				earnedPoints = calculateTextMatchPoints(task, taskOptions, textAnswer);
+			}
 		}
 
 		attempt.setEarnedPoints(earnedPoints);

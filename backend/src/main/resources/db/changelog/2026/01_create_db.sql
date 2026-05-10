@@ -76,10 +76,6 @@ INSERT INTO users (id, username, pass_hash, firstname, lastname, grade_level, ro
 INSERT INTO tasks (id, title, description, task_type, task_level, grade_level, max_points, correct_answers_count) VALUES
     ('aaaa1111-1111-1111-1111-111111111111', 'Основы SQL: Агрегация', 'Какая функция используется для подсчета количества строк?', 'TEST', 'Easy', 'Junior', 10, 1);
 
--- Задание 2: Поиск ошибки для Middle
-INSERT INTO tasks (id, title, description, task_type, task_level, grade_level, max_points, correct_answers_count) VALUES
-    ('bbbb1111-1111-1111-1111-111111111111', 'Ошибка в оконной функции', 'Аналитик хотел пронумеровать покупки пользователей по дате. Найдите строку с синтаксической ошибкой.', 'ERROR_SEARCH', 'Medium', 'Middle', 20, 1);
-
 -- ==========================================
 -- 3. ВАРИАНТЫ ОТВЕТОВ
 -- ==========================================
@@ -89,12 +85,6 @@ INSERT INTO task_options (id, task_id, content, is_correct) VALUES
                                                                 (gen_random_uuid(), 'aaaa1111-1111-1111-1111-111111111111', 'SUM()', false),
                                                                 (gen_random_uuid(), 'aaaa1111-1111-1111-1111-111111111111', 'COUNT()', true),
                                                                 (gen_random_uuid(), 'aaaa1111-1111-1111-1111-111111111111', 'MAX()', false);
-
--- Варианты для Задания 2 (Поиск ошибки)
-INSERT INTO task_options (id, task_id, content, is_correct) VALUES
-                                                                (gen_random_uuid(), 'bbbb1111-1111-1111-1111-111111111111', 'SELECT user_id, amount,', false),
-                                                                (gen_random_uuid(), 'bbbb1111-1111-1111-1111-111111111111', 'ROW_NUMBER() OVER (PARTITION BY user_id SORT BY created_at) as rn', true), -- Ошибка тут: нужно ORDER BY, а не SORT BY
-                                                                (gen_random_uuid(), 'bbbb1111-1111-1111-1111-111111111111', 'FROM payments;', false);
 
 -- ==========================================
 -- 4. ПОПЫТКИ И ПРОГРЕСС ПОЛЬЗОВАТЕЛЕЙ

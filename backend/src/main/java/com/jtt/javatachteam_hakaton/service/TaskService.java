@@ -83,8 +83,9 @@ public class TaskService {
                 solved,
                 question,
                 options.stream()
+                    .filter(opt -> !opt.getIsCorrect())
                     .map(TaskOption::getContent)
-                    .reduce((left, right) -> left + "\n" + right)
+                    .findFirst()
                     .orElse("")
             );
             case OPEN -> new OpenTaskDto(
