@@ -55,7 +55,7 @@ export function TaskOpen({ task }: { task: OpenTask }) {
       </div>
 
       <div
-        className="whitespace-pre-wrap [&_table]:border-collapse [&_table]:border [&_td]:border [&_td]:p-1 [&_th]:border [&_th]:p-1"
+        className="prose prose-sm max-w-none"
         dangerouslySetInnerHTML={{ __html: marked.parse(task.question) }}
       ></div>
 

@@ -94,21 +94,9 @@ public class TaskService {
                 true,
                 solved,
                 question,
-                latestWrittenText(userId, task.getId())
+                sqlTaskEvaluationService.getStarterSql(task.getId())
             );
         };
-    }
-
-    private String latestWrittenText(UUID userId, UUID taskId) {
-        String starterSql = sqlTaskEvaluationService.getStarterSql(taskId);
-        if (userId == null) {
-            return starterSql;
-        }
-
-        return attemptRepository.findLatestByUserIdAndTaskId(userId, taskId)
-            .map(Attempt::getWrittenText)
-            .filter(text -> text != null && !text.isBlank())
-            .orElse(starterSql);
     }
 
     private boolean isMultiple(Task task, List<TaskOption> options) {
@@ -123,15 +111,7 @@ public class TaskService {
     }
 
     private String buildQuestion(Task task) {
-        String title = task.getTitle() == null ? "" : task.getTitle().trim();
         String description = task.getDescription() == null ? "" : task.getDescription().trim();
-
-        if (title.isEmpty()) {
-            return description;
-        }
-        if (description.isEmpty() || title.equals(description)) {
-            return title;
-        }
-        return title + "\n\n" + description;
+        return description;
     }
 }

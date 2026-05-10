@@ -80,10 +80,6 @@ INSERT INTO tasks (id, title, description, task_type, task_level, grade_level, m
 INSERT INTO tasks (id, title, description, task_type, task_level, grade_level, max_points, correct_answers_count) VALUES
     ('bbbb1111-1111-1111-1111-111111111111', 'Ошибка в оконной функции', 'Аналитик хотел пронумеровать покупки пользователей по дате. Найдите строку с синтаксической ошибкой.', 'ERROR_SEARCH', 'Medium', 'Middle', 20, 1);
 
--- Задание 3: Открытое задание для Middle (которое мы сделаем "В процессе")
-INSERT INTO tasks (id, title, description, task_type, task_level, grade_level, max_points, correct_answers_count) VALUES
-    ('cccc1111-1111-1111-1111-111111111111', 'Расчет LTV', 'Напишите SQL-запрос для расчета LTV пользователей по когортам регистрации. Используйте таблицы `users` и `payments`.', 'OPEN', 'Hard', 'Middle', 50, 0);
-
 -- ==========================================
 -- 3. ВАРИАНТЫ ОТВЕТОВ
 -- ==========================================
@@ -113,17 +109,3 @@ INSERT INTO attempt_answers (attempt_id, task_option_id)
 SELECT 'dddd1111-1111-1111-1111-111111111111', id
 FROM task_options
 WHERE task_id = 'aaaa1111-1111-1111-1111-111111111111' AND is_correct = true;
-
-
--- Ситуация 2: Middle начал открытое задание, написал половину кода, но ЕЩЕ НЕ ОТПРАВИЛ (IN_PROGRESS)
--- Поле completed_at остается пустым (NULL), баллы = 0
-INSERT INTO attempts (id, user_id, task_id, status, earned_points, written_text, started_at) VALUES
-    ('dddd2222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 'cccc1111-1111-1111-1111-111111111111', 'IN_PROGRESS', 0,
-     'WITH cohorts AS (
-         SELECT user_id, MIN(DATE_TRUNC(''month'', created_at)) as cohort_month
-         FROM users
-         GROUP BY user_id
-     )
-     SELECT c.cohort_month, ...
-     -- TODO: надо дописать джоин с таблицей payments и агрегацию по месяцам жизни',
-     CURRENT_TIMESTAMP - INTERVAL '15 minutes');
