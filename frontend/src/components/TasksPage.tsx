@@ -10,7 +10,7 @@ export function TasksPage() {
   const [type, setType] = useState<'test' | 'mistakes' | 'open'>('test')
   const [onlyUnsolved, setOnlyUnsolved] = useState(false)
 
-  const { data: tasks } = useQuery({
+  const { data: tasks, refetch } = useQuery({
     queryKey: ['tasks', type],
     queryFn: () => getTasks(type),
   })
@@ -31,7 +31,10 @@ export function TasksPage() {
         />
         <Checkbox
           checked={onlyUnsolved}
-          onChange={(event) => setOnlyUnsolved(event.target.checked)}
+          onChange={(event) => {
+            setOnlyUnsolved(event.target.checked)
+            refetch()
+          }}
           content="Только нерешённые"
         />
       </div>
@@ -41,11 +44,11 @@ export function TasksPage() {
           {filteredTasks.map((task) => {
             switch (task.type) {
               case 'test':
-                return <TaskTest task={task} />
+                return <TaskTest task={task} key={task.id} />
               case 'mistakes':
-                return <TaskMistakes task={task} />
+                return <TaskMistakes task={task} key={task.id} />
               case 'open':
-                return <TaskOpen task={task} />
+                return <TaskOpen task={task} key={task.id} />
             }
           })}
         </div>

@@ -30,7 +30,7 @@ export function LoginPage() {
   }
 
   const isLoginFormValid = isUsernameValid() && isPasswordValid()
-  const isSignupFormValid = isLoginFormValid && isPasswordAgainValid()
+  const isSignupFormValid = isUsernameValid() && password.length >= 6 && isPasswordAgainValid()
 
   async function handleLoginSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
