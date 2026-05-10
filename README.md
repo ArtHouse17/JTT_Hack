@@ -105,6 +105,24 @@ Attempt — попытка прохождения задания
    — Связь один ко многим (1 : M)  
    Одна задача может иметь множество попыток от разных пользователей.
 
+**REST API**
+
+POST `/auth/login` — вход
+
+POST `/auth/logout` — выход
+
+POST `/auth/signup` — регистрация
+
+GET `/users/me` — информация о пользователе
+
+GET `/users/me/progress` — прогресс пользователя
+
+DELETE `/users/me/progress` — сброс прогресса
+
+GET `/tasks?type={test|mistakes|open}` — список заданий
+
+POST `/tasks/{taskId}/attempts` — отправить попытку
+
 **Структура кода**
 
 Слоистая архитектура — четкое разделение уровней (Presentation, Business Logic, Data Access, Database)
