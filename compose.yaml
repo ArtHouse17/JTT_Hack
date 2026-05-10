@@ -42,7 +42,7 @@ services:
       dockerfile: Dockerfile
     container_name: javalin-app
     ports:
-      - "7070:7070"
+      - "8080:8080"
     restart: unless-stopped
     depends_on:
       postgres:
@@ -53,7 +53,7 @@ services:
       DB_USER: "user"
       DB_PASSWORD: "password"
       DB_DRIVER: "org.postgresql.Driver"
-      PORT: "7070"
+      PORT: "8080"
       JWT_SECRET: "JavaTachTeamHackathonSuperSecretKeyForJwt2026"
 
   vite:
@@ -61,7 +61,7 @@ services:
     container_name: vite
     working_dir: /app
     environment:
-      VITE_BACKEND_URL: "http://localhost:7070"
+      VITE_BACKEND_URL: "http://localhost:8080"
     volumes:
       - ./frontend:/app
     ports:
