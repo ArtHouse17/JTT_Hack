@@ -244,7 +244,7 @@ POST `/tasks/{taskId}/attempts` — отправить попытку
 ```bash
 git clone https://github.com/ArtHouse17/JTT_Hack.git
 cd JTT_Hack
-docker compose up
+docker compose up --build
 ```
 
 Проект можно считать запущенным после появления большой надписи JAVALIN 7 в логах Докера. После успешного запуска приложение будет доступно:
